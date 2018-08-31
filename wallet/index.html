@@ -2570,7 +2570,9 @@
 						<div class="card-header">
 							<div class="row">
 								<div class="col-8">
-									<b id="title">Open Wallet</b>
+									<b id="title">
+										Open <a href="http://github.com/MicroBitcoinOrg/MicroBitcoin" target="_blank">MicroBitcoin</a> Wallet
+									</b>
 								</div>
 								<div class="col-4">
 									<div id="network-name" style="text-align: right;">
@@ -3331,7 +3333,7 @@
 			function closeWallet() {
 				switchScreen("open")
 				setTitle("Open Wallet")
-				$("#title").text("Open Wallet")
+				$("#title").html('Open <a href="http://github.com/MicroBitcoinOrg/MicroBitcoin" target="_blank">MicroBitcoin</a> Wallet')
 				$("#passphrase").val("")
 				globalData.keys = {}
 			}

@@ -7,11 +7,13 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css">
 		<link href="https://microbitcoinorg.github.io/misc/favicon.ico" rel="icon" type="image/x-icon">
-
+		<link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+		
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+		<script src="https://code.highcharts.com/highcharts.src.js"></script>
 
 		<style>
 			@import url(https://volbil.github.io/entypo/entypo.css);
@@ -69,9 +71,6 @@
 							<a href="#" class="nav-link">Home</a>
 						</li>
 						<li class="nav-item">
-							<a href="https://microbitcoinorg.github.io/wallet/" class="nav-link">Wallet</a>
-						</li>
-						<li class="nav-item">
 							<a href="#/api" class="nav-link">API</a>
 						</li>
 						<li class="nav-item dropdown" id="network-list">
@@ -107,6 +106,15 @@
 		<!-- Home page -->
 		<div id="homepage" class="router-page">
 			<div class="container">
+				<div class="card mb-3">
+					<div class="card-body">
+						<div>
+							<div class="panel-body chart-wrapper" id="hpChart">
+								<!--<canvas id="difficultyChart" height="210"></canvas>-->
+							</div>
+						</div>
+					</div>
+				</div>
 				<div class="card mb-3">
 					<div class="table-responsive">
 						<table id="blocks-table" class="table table-borderless table-md table-striped text-center mb-0">
@@ -445,6 +453,108 @@
 
 		<!-- All magic is here :D -->
 		<script>
+
+			function showCharts(data) {
+
+				Highcharts.chart('hpChart', {
+
+					chart: {
+				        type: 'spline',
+				        height: 300
+				    },
+
+				    title: {
+				        text: ''
+				    },
+
+				    colors: ["#7cb5ec", "#434348", "#90ed7d", "#f7a35c", "#8085e9", "#f15c80", "#e4d354", "#2b908f", "#f45b5b", "#91e8e1"],
+
+				    xAxis: [{
+			        	categories: [].concat(data["blocks"]).reverse(),
+				        crosshair: true,
+				        type: 'datetime',
+				        labels: {
+				        	enabled: true,
+				        	step: 2,
+				        	formatter: function() {
+				        		return this.value;
+				        		}	        	
+				        	}
+					    }],
+
+					yAxis: [{ labels: { enabled: false}, title: { text: null }},
+							{ labels: { enabled: false}, title: { text: null }},
+							{ labels: { enabled: false}, title: { text: null }, opposite: true },
+							{ labels: { enabled: false}, title: { text: null }},
+							{ labels: { enabled: false}, title: { text: null }}
+				        	],	    
+				    
+				    tooltip: {
+						shared: true,
+						formatter: function() {
+					        var s = '<b>'+ this.x +'</b>';
+
+					        $.each(this.points, function(i, point) {
+					            s += '<br/><span style="color:' + point.color + '">\u25CF</span>: ' + point.series.name + ': ' + point.y;
+					            // if(i==4) s+= ' MH';
+					        });
+
+					        return s;
+					    },
+			        },
+
+				    plotOptions: {
+				        series: {
+				            label: {
+				                connectorAllowed: false
+				            },
+				            marker: {
+			                	enabled: false,
+			                	size: 2
+			            	}
+				        }
+				    },
+
+				    series: [{
+					        name: 'Difficulty',
+					        data: [].concat(data["diffs"]).reverse(),
+					        yAxis: 1,
+					        color: '#7cb5ec',
+					        type: 'areaspline',
+					        fillOpacity: 0.3
+					    	}, {
+					        name: 'Transactions',
+					        data: [].concat(data["txs"]).reverse(),
+					        yAxis: 2,
+					        color: '#90ed7d'
+					    	}, {
+					        name: 'Sizes',
+					        data: [].concat(data["sizes"]).reverse(),
+					        yAxis: 3,
+					        color: '#f7a35c'
+					    	}],
+
+				    responsive: {
+				        rules: [{
+				            condition: {
+				                maxWidth: 500,
+				                maxHeight: 300
+				            },
+				            chartOptions: {
+				                legend: {
+				                    layout: 'horizontal',
+				                    align: 'center',
+				                    verticalAlign: 'bottom'
+				                }
+				            }
+				        }]
+				    }
+
+				});
+				$('.highcharts-credits').hide();
+			}
+
+
 			// Config
 			var networksConfigs = {
 				"MBC": {
@@ -647,6 +757,7 @@
 												setTitle("Address " + address)
 												displayAddressInfo(info.data)
 											} else {
+												console.log(info)
 												showError(errorMessages["not-valid-address"])
 												swithchPage()
 											}
@@ -1171,6 +1282,24 @@
 						getBlocks(db_height).then(function(blocks) {
 							if (!blocks["error"]) {
 								displayBlocks(blocks["blocks"], true)
+
+								var data = {
+									"diffs": [],
+									"blocks": [],
+									"sizes": [],
+									"timestamps": [],
+									"txs": []
+								}
+
+								$.each(blocks["blocks"].reverse(), function(index, block) {
+									data["diffs"].push(block["difficulty"])
+									data["blocks"].push(block["block_height"])
+									data["sizes"].push(block["size"])
+									data["timestamps"].push(block["timestamp"])
+									data["txs"].push(block["tx_count"])
+								})
+
+								showCharts(data)
 							} else {
 								showError(errorMessages["blocks-load-error"])
 							}

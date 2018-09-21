@@ -115,6 +115,15 @@
 						</div>
 					</div>
 				</div>
+				<!-- Circulating Supply -->
+				<div class="card mb-3 py-3">
+					<div class="card-body text-center">
+						<code class="lead">Circulating Supply: <span id="c-supply" class="text-black-50">Calculating...</span> MBC</code>
+						<br />
+						<code class="text-muted">Max Supply: 210,000,000,000 MBC</code>
+					</div>
+				</div>
+				<!-- Latest Blocks -->
 				<div class="card mb-3">
 					<div class="table-responsive">
 						<table id="blocks-table" class="table table-borderless table-md table-striped text-center mb-0">
@@ -1437,6 +1446,52 @@
 			function base58ToHash160(string) {
 				var result = hexString(bs58Decode(string)) 
 				return result.substring(2, result.length - 8)
+			}
+
+			function getCirculatingSupply(height) {
+				var btcReward = 50
+		    var mbcReward = btcReward * 1000
+		    var btcInterval = 210000
+		    var mbcInterval = btcInterval * 10
+		    var premine = 1050000
+		    var ratio = 10000
+
+		    var supply = 0
+		    var cSupply = 0
+
+		    switch (true) {
+		      case (height < 630000):
+		        while (height > btcInterval) {
+		        	supply = supply + btcInterval * btcReward
+		        	btcReward = btcReward / 2
+		        	height = height - btcInterval
+		        }
+		        var btcIncrement = height * btcReward
+		        supply = supply + btcIncrement + premine
+		        cSupply = supply * ratio
+		        break
+
+		      case (height >= 630000):
+		        var intervalHeight = height - 629999
+		        var forkedReward = mbcReward / 8 // forked reward from period 4
+		        var forkedSupply = 194249875000 // total until height 629,999 // 194,249,875,000 MBC WITH premine
+
+		        while (intervalHeight > mbcInterval) {
+		          var increment = intervalHeight * forkedReward
+		          supply = forkedSupply + increment
+		          forkedReward = forkedReward / 2
+		          intervalHeight = intervalHeight - mbcInterval
+		        }
+		        var mbcIncrement = intervalHeight * forkedReward
+		        cSupply = supply + forkedSupply + mbcIncrement
+		        break
+
+		      default:
+		        break
+		    }
+				var cSupplyString = cSupply.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+				$("#c-supply").removeClass("text-black-50")
+				$("#c-supply").html(cSupplyString)
 			}
 
 			// All starts here

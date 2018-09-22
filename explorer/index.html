@@ -1451,35 +1451,35 @@
 
 			// Get circulating supply
 			function getCirculatingSupply(height) {
-		    const ratio = 10000
-		    const btcMaxSupply = 21000000
-		    const mbcMaxSupply = btcMaxSupply * ratio
+		    var ratio = 10000
+		    var btcMaxSupply = 21000000
+		    var mbcMaxSupply = btcMaxSupply * ratio
 
-		    let btcReward = 50
-		    let mbcReward = btcReward * 1000 // 10 minutes => 1 minute
+		    var btcReward = 50
+		    var mbcReward = btcReward * 1000 // 10 minutes => 1 minute
 		    mbcReward = mbcReward / 4 // reward at fork period
 
-		    const btcInterval = 210000
-		    const mbcInterval = btcInterval * 10
+		    var btcInterval = 210000
+		    var mbcInterval = btcInterval * 10
 
-		    const premine = mbcMaxSupply * 0.05
-		    const forkHeight = 525001
-		    const forkedSupply = 170625000000
+		    var premine = mbcMaxSupply * 0.05
+		    var forkHeight = 525001
+		    var forkedSupply = 170625000000
 
 		    // total circulating supply until 629,999 including premine
-		    const newForkHeight = 629999
-		    const newForkedSupply = 182437475000
+		    var newForkHeight = 629999
+		    var newForkedSupply = 182437475000
 
-				let circulatingSupply = 0
+				var circulatingSupply = 0
 
 		    if (height < 630000) {
-		      const intervalHeight = height - forkHeight
-		      const intervalSupply = intervalHeight * mbcReward
+		      var intervalHeight = height - forkHeight
+		      var intervalSupply = intervalHeight * mbcReward
 
 		      circulatingSupply = forkedSupply + intervalSupply + premine
 		    } else if (height >= 630000) {
-		      let forkedIntervalSupply = 0
-		      let forkedIntervalHeight = height - newForkHeight
+		      var forkedIntervalSupply = 0
+		      var forkedIntervalHeight = height - newForkHeight
 		      mbcReward = mbcReward / 2
 
 		      while (forkedIntervalHeight >= mbcInterval) {
@@ -1488,7 +1488,7 @@
 		        mbcReward = mbcReward / 2
 		      }
 
-		      const forkedSupply = forkedIntervalSupply + (forkedIntervalHeight * mbcReward)
+		      var forkedSupply = forkedIntervalSupply + (forkedIntervalHeight * mbcReward)
 		      circulatingSupply = newForkedSupply + forkedSupply
 		    }
 

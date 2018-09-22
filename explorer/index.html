@@ -1493,7 +1493,7 @@
 		    }
 
 				$("#c-supply").removeClass("text-black-50")
-				$("#c-supply").html(circulatingSupply)
+				$("#c-supply").html(circulatingSupply.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))
 		  }
 
 			// All starts here

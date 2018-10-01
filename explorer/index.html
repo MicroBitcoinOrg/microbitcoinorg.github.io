@@ -27,7 +27,7 @@
 				padding-bottom: 56px;
 				position: relative;
 			}
-			.responce-json {
+			.response-json {
 				overflow: auto;
 				padding: 16px;
 				background-color: #f6f8fa;
@@ -118,7 +118,7 @@
 						</div>
 					</div>
 				</div>
-				<!-- Circulating Supply 
+				<!-- Circulating Supply
 				<div class="card mb-3 py-3">
 					<div class="text-center">
 						<code class="lead">Circulating Supply: <span id="c-supply" class="text-black-50">Calculating...</span> MBC</code>
@@ -233,12 +233,12 @@
 								Return the confirmed and unconfirmed balances of an address.
 							</div>
 							<div class="mb-1">
-								Exapmle usage: <a class="api-link" target="_blank" data-docs-link="address_get_balance" href="#"></a>
+								Example usage: <a class="api-link" target="_blank" data-docs-link="address_get_balance" href="#"></a>
 							</div>
 							<div class="mb-1">
-								Exapmle responce:
+								Example response:
 							</div>
-							<div class="responce-json">
+							<div class="response-json">
 								{"jsonrpc": "2.0", "id": "explorer", "result": {"confirmed": 200000, "unconfirmed": 0}}
 							</div>
 						</div>
@@ -249,12 +249,12 @@
 								Return the confirmed and unconfirmed history of an address.
 							</div>
 							<div class="mb-1">
-								Exapmle usage: <a class="api-link" target="_blank" data-docs-link="address_get_history" href="#"></a>
+								Example usage: <a class="api-link" target="_blank" data-docs-link="address_get_history" href="#"></a>
 							</div>
 							<div class="mb-1">
-								Exapmle responce:
+								Example response:
 							</div>
-							<div class="responce-json">
+							<div class="response-json">
 								{"jsonrpc": "2.0", "id": "explorer", "result": [{"tx_hash": "3ef0132a38ac92966fb427d9cafcd7d08fa0ffa62b82cb13ab44869d71d92056", "height": 525741}]}
 							</div>
 						</div>
@@ -265,12 +265,12 @@
 								Return the unconfirmed transactions of an address.
 							</div>
 							<div class="mb-1">
-								Exapmle usage: <a class="api-link" target="_blank" data-docs-link="address_get_mempool" href="#"></a>
+								Example usage: <a class="api-link" target="_blank" data-docs-link="address_get_mempool" href="#"></a>
 							</div>
 							<div class="mb-1">
-								Exapmle responce:
+								Example response:
 							</div>
-							<div class="responce-json">
+							<div class="response-json">
 								{"jsonrpc": "2.0", "id": "explorer", "result": [{"tx_hash": "45381031132c57b2ff1cbe8d8d3920cf9ed25efd9a0beb764bdb2f24c7d1c7e3", "height": 0, "fee": 24310}]}
 							</div>
 						</div>
@@ -281,12 +281,12 @@
 								Return an ordered list of UTXOs sent to an address.
 							</div>
 							<div class="mb-1">
-								Exapmle usage: <a class="api-link" target="_blank" data-docs-link="address_get_utxo" href="#"></a>
+								Example usage: <a class="api-link" target="_blank" data-docs-link="address_get_utxo" href="#"></a>
 							</div>
 							<div class="mb-1">
-								Exapmle responce:
+								Example response:
 							</div>
-							<div class="responce-json">
+							<div class="response-json">
 								<div class="scrolable">
 									{"jsonrpc": "2.0", "id": "explorer", "result": [{"tx_hash": "3ef0132a38ac92966fb427d9cafcd7d08fa0ffa62b82cb13ab44869d71d92056", "tx_pos": 1, "height": 525741, "value": 200000000000, "script": "76a9145b2b4acf127dca2291e9fc1411e17dabf7a90b9988ac"}]}
 								</div>
@@ -299,12 +299,12 @@
 								Return info about address.
 							</div>
 							<div class="mb-1">
-								Exapmle usage: <a class="api-link" target="_blank" data-docs-link="address_info" href="#"></a>
+								Example usage: <a class="api-link" target="_blank" data-docs-link="address_info" href="#"></a>
 							</div>
 							<div class="mb-1">
-								Exapmle responce:
+								Example response:
 							</div>
-							<div class="responce-json">
+							<div class="response-json">
 								{"jsonrpc": "2.0", "id": "explorer", "result": {"balance": {"confirmed": 200000000000, "unconfirmed": 0}, "history_count": 1, "address": "BbHkxr56NVp7iZDVWkcHsKEooohCLYRujG", "history": []}}
 							</div>
 						</div>
@@ -315,12 +315,12 @@
 								Return info about block at the given height.
 							</div>
 							<div class="mb-1">
-								Exapmle usage: <a class="api-link" target="_blank" data-docs-link="get_header" href="#"></a>
+								Example usage: <a class="api-link" target="_blank" data-docs-link="get_header" href="#"></a>
 							</div>
 							<div class="mb-1">
-								Exapmle responce:
+								Example response:
 							</div>
-							<div class="responce-json">
+							<div class="response-json">
 								{"jsonrpc": "2.0", "id": "explorer", "result": {"block_height": 0, "version": 1, "block_hash": "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f", "prev_block_hash": "0000000000000000000000000000000000000000000000000000000000000000", "merkle_root": "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b", "timestamp": 1231006505, "bits": 486604799, "nonce": 2083236893}}
 							</div>
 						</div>
@@ -331,12 +331,12 @@
 								Return info about blocks at the given height and range.
 							</div>
 							<div class="mb-1">
-								Exapmle usage: <a class="api-link" target="_blank" data-docs-link="get_header_range" href="#"></a>
+								Example usage: <a class="api-link" target="_blank" data-docs-link="get_header_range" href="#"></a>
 							</div>
 							<div class="mb-1">
-								Exapmle responce:
+								Example response:
 							</div>
-							<div class="responce-json">
+							<div class="response-json">
 								{"jsonrpc": "2.0", "id": "explorer", "result": [{"block_height": 1, "version": 1, "block_hash": "00000000839a8e6886ab5951d76f411475428afc90947ee320161bbf18eb6048", "prev_block_hash": "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f", "merkle_root": "0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098", "timestamp": 1231469665, "bits": 486604799, "nonce": 2573394689, "tx_count": 1}]}
 							</div>
 						</div>
@@ -347,12 +347,12 @@
 								Return info about block by given hash.
 							</div>
 							<div class="mb-1">
-								Exapmle usage: <a class="api-link" target="_blank" data-docs-link="get_header_info" href="#"></a>
+								Example usage: <a class="api-link" target="_blank" data-docs-link="get_header_info" href="#"></a>
 							</div>
 							<div class="mb-1">
-								Exapmle responce:
+								Example response:
 							</div>
-							<div class="responce-json">
+							<div class="response-json">
 								{"jsonrpc": "2.0", "id": "explorer", "result": {"hash": "00000000f1b3a6b39671e475b858bc6831db3ca57e8ecafa49a13c4d5b04fb53", "confirmations": 525743, "strippedsize": 215, "size": 215, "weight": 860, "height": 86, "version": 1, "versionHex": "00000001", "merkleroot": "12272d79ff1fbc1238d78d7d6e0e75c5f0e7aae7925e4f59b96b02fc2cd82bfc", "time": 1231650986, "mediantime": 1231646456, "nonce": 3625999133, "bits": "1d00ffff", "difficulty": 1, "chainwork": "0000000000000000000000000000000000000000000000000000005700570057", "previousblockhash": "00000000219949b3de1eae5447c00501812757885e65554fe5c51039ebe643d1", "nextblockhash": "00000000a31b3785f0adc10975a4e3e356d133365c0aeab6e42240e17ac2e63c", "tx_count": 1, "tx": []}}
 							</div>
 						</div>
@@ -363,12 +363,12 @@
 								Broadcast raw transaction to the network.
 							</div>
 							<div class="mb-1">
-								Exapmle usage: <a class="api-link" target="_blank" data-docs-link="broadcast" href="#"></a>
+								Example usage: <a class="api-link" target="_blank" data-docs-link="broadcast" href="#"></a>
 							</div>
 							<div class="mb-1">
-								Exapmle responce:
+								Example response:
 							</div>
-							<div class="responce-json">
+							<div class="response-json">
 								{"jsonrpc": "2.0", "id": "explorer", "result": "a76242fce5753b4212f903ff33ac6fe66f2780f34bdb4b33b175a7815a11a98e"}
 							</div>
 						</div>
@@ -379,12 +379,12 @@
 								Return a raw transaction.
 							</div>
 							<div class="mb-1">
-								Exapmle usage: <a class="api-link" target="_blank" data-docs-link="tx_get" href="#"></a>
+								Example usage: <a class="api-link" target="_blank" data-docs-link="tx_get" href="#"></a>
 							</div>
 							<div class="mb-1">
-								Exapmle responce:
+								Example response:
 							</div>
-							<div class="responce-json">
+							<div class="response-json">
 								{"jsonrpc": "2.0", "id": "explorer", "result": "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0704ffff001d011affffffff0100f2052a01000000434104d5897fd3690b923198285547881b89ea914fda24d5ea71db9742244a4b047b2d9a57d24c49067438491eef34585f2c6178bfb45c677afe7034e7b4ae5b603132ac00000000"}
 							</div>
 						</div>
@@ -395,12 +395,12 @@
 								Return a deserialized transaction.
 							</div>
 							<div class="mb-1">
-								Exapmle usage: <a class="api-link" target="_blank" data-docs-link="tx_get_verbose" href="#"></a>
+								Example usage: <a class="api-link" target="_blank" data-docs-link="tx_get_verbose" href="#"></a>
 							</div>
 							<div class="mb-1">
-								Exapmle responce:
+								Example response:
 							</div>
-							<div class="responce-json">
+							<div class="response-json">
 								{"jsonrpc": "2.0", "id": "explorer", "result": {"txid": "12272d79ff1fbc1238d78d7d6e0e75c5f0e7aae7925e4f59b96b02fc2cd82bfc", "size": 134, "version": 1, "locktime": 0, "vin": [], "vout": [], "blockhash": "00000000f1b3a6b39671e475b858bc6831db3ca57e8ecafa49a13c4d5b04fb53", "height": 86, "confirmations": 525749, "time": 1231650986, "blocktime": 1231650986, "amount": 5000000000, "vin_count": 1, "vout_count": 1}}
 							</div>
 						</div>
@@ -411,12 +411,12 @@
 								Get info about ElectrumX daemon.
 							</div>
 							<div class="mb-1">
-								Exapmle usage: <a class="api-link" target="_blank" data-docs-link="getinfo" href="#"></a>
+								Example usage: <a class="api-link" target="_blank" data-docs-link="getinfo" href="#"></a>
 							</div>
 							<div class="mb-1">
-								Exapmle responce:
+								Example response:
 							</div>
-							<div class="responce-json">
+							<div class="response-json">
 								{"jsonrpc": "2.0", "id": "explorer", "result": {"version": "ElectrumX 1.4.4p2", "daemon": "127.0.0.1:6402/", "daemon_height": 525834, "db_height": 525834, "closing": 0, "errors": 0, "groups": 2, "logged": 0, "paused": 0, "pid": 23922, "peers": {"bad": 0, "good": 0, "never": 0, "stale": 0, "total": 0}, "requests": 1, "sessions": 11, "subs": 409, "txs_sent": 1, "uptime": "30m 56s"}}
 							</div>
 						</div>

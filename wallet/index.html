@@ -723,7 +723,7 @@
 
 			// Estimate fee
 			function estimateFee() {
-				return makeRequest({method: "blockchain.estimatesmartfee", ["30"]}, "POST")
+				return makeRequest({method: "blockchain.estimatesmartfee", params: ["30"]}, "POST")
 			}
 
 			// Make request :D

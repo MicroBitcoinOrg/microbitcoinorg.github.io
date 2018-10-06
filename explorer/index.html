@@ -118,14 +118,33 @@
 						</div>
 					</div>
 				</div>
-				<!-- Circulating Supply
+				<!-- Circulating Supply -->
 				<div class="card mb-3 py-3">
-					<div class="text-center">
-						<code class="lead">Circulating Supply: <span id="c-supply" class="text-black-50">Calculating...</span> MBC</code>
-						<br />
-						<code class="text-muted">Max Supply: 210,000,000,000 MBC</code>
+					<div class="row mb-sm-1 mb-md-0">
+						<div class="col-sm-12 col-md-6 text-center text-md-right">
+							<code class="lead">Circulating Supply</code>
+						</div>
+						<div class="col-sm-12 col-md-6 text-center text-md-left">
+							<code class="lead"><span id="c-supply" class="text-black-50">Loading...</span> MBC</code>
+						</div>
 					</div>
-				</div> -->
+					<div class="row mb-sm-1 mb-md-0">
+						<div class="col-sm-12 col-md-6 text-center text-md-right">
+							<code class="text-muted">Maximum Supply</code>
+						</div>
+						<div class="col-sm-12 col-md-6 text-center text-md-left">
+							<code class="text-muted">210,000,000,000 MBC</code>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-12 col-md-6 text-center text-md-right">
+							<code class="text-muted">Current Reward</code>
+						</div>
+						<div class="col-sm-12 col-md-6 text-center text-md-left">
+							<code class="text-muted"><span id="c-reward">Loading...</span> MBC per Block</code>
+						</div>
+					</div>
+				</div>
 				<!-- Latest Blocks -->
 				<div class="card mb-3">
 					<div class="table-responsive">
@@ -495,7 +514,8 @@
 				"broadcast": "?method=blockchain.transaction.broadcast&params[]=020000000......1c01bbe4179ecb88ac1b211300",
 				"tx_get": "?method=blockchain.transaction.get&params[]=12272d79ff1fbc1238d78d7d6e0e75c5f0e7aae7925e4f59b96b02fc2cd82bfc",
 				"tx_get_verbose": "?method=blockchain.transaction.get_verbose&params[]=12272d79ff1fbc1238d78d7d6e0e75c5f0e7aae7925e4f59b96b02fc2cd82bfc",
-				"getinfo": "?method=getinfo"
+				"getinfo": "?method=getinfo",
+				"get_circulating_supply": "?method=blockchain.supply"
 			}
 
 			// Error messages
@@ -507,7 +527,8 @@
 				"no-block-specified": "You must specify blocks!",
 				"no-tx-specified": "You must specify transaction!",
 				"not-valid-address": "You must specify valid address!",
-				"search-error": "We can't process your request :("
+				"search-error": "We can't process your request :(",
+				"circulating-supply-load-error": "There was an error while trying to load the circulating supply!"
 			}
 
 			function showCharts(data) {
@@ -1274,7 +1295,18 @@
 					var display_height = $("#blocks-table tbody tr:first-child").attr("data-height")
 
 					if (db_height != display_height || $("#blocks-table tbody tr").length > 0) {
-						getCirculatingSupply(db_height)
+						// Display circulating supply
+						getCirculatingSupply().then(function(supply) {
+							if(!supply["error"]) {
+								circulatingSupply = supply.result.supply / 10000
+								$("#c-supply").removeClass("text-black-50");
+								$("#c-supply").text(circulatingSupply.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+								$("#c-reward").text(supply.result.reward.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+							} else {
+								showError(errorMessages["circulating-supply-load-error"])
+							}
+						});
+
 						getBlocks(db_height).then(function(blocks) {
 							if (!blocks["error"]) {
 								displayBlocks(blocks["blocks"], true)
@@ -1453,50 +1485,8 @@
 			}
 
 			// Get circulating supply
-			function getCirculatingSupply(height) {
-		    var ratio = 10000
-		    var btcMaxSupply = 21000000
-		    var mbcMaxSupply = btcMaxSupply * ratio
-
-		    var btcReward = 50
-		    var mbcReward = btcReward * 1000 // 10 minutes => 1 minute
-		    mbcReward = mbcReward / 4 // reward at fork period
-
-		    var btcInterval = 210000
-		    var mbcInterval = btcInterval * 10
-
-		    var premine = mbcMaxSupply * 0.05
-		    var forkHeight = 525001
-		    var forkedSupply = 170625000000
-
-		    // total circulating supply until 629,999 including premine
-		    var newForkHeight = 629999
-		    var newForkedSupply = 182437475000
-
-				var circulatingSupply = 0
-
-		    if (height < 630000) {
-		      var intervalHeight = height - forkHeight
-		      var intervalSupply = intervalHeight * mbcReward
-
-		      circulatingSupply = forkedSupply + intervalSupply + premine
-		    } else if (height >= 630000) {
-		      var forkedIntervalSupply = 0
-		      var forkedIntervalHeight = height - newForkHeight
-		      mbcReward = mbcReward / 2
-
-		      while (forkedIntervalHeight >= mbcInterval) {
-		        forkedIntervalSupply = forkedIntervalHeight * mbcReward
-		        forkedIntervalHeight = forkedIntervalHeight - mbcInterval
-		        mbcReward = mbcReward / 2
-		      }
-
-		      var forkedSupply = forkedIntervalSupply + (forkedIntervalHeight * mbcReward)
-		      circulatingSupply = newForkedSupply + forkedSupply
-		    }
-
-				$("#c-supply").removeClass("text-black-50")
-				$("#c-supply").html(circulatingSupply.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))
+			function getCirculatingSupply() {
+		    return makeRequest({ method: "blockchain.supply" }, false);
 		  }
 
 			// All starts here

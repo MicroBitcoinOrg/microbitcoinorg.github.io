@@ -1298,7 +1298,7 @@
 						// Display circulating supply
 						getCirculatingSupply().then(function(supply) {
 							if(!supply["error"]) {
-								circulatingSupply = supply.result.supply / 10000
+								circulatingSupply = supply.result.supply
 								$("#c-supply").removeClass("text-black-50");
 								$("#c-supply").text(circulatingSupply.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
 								$("#c-reward").text(supply.result.reward.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));

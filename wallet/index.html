@@ -1823,7 +1823,7 @@
 					/* list unspent transactions */
 					r.listUnspent = function(address, amount, callback) {
 						coinjs.ajax(
-							coinjs.host + "?method=blockchain.address.get_utxo_amount&params[]=" + address + "&params[]=" + amount,
+							coinjs.host + "?method=blockchain.address.utxo&params[]=" + address + "&params[]=" + amount,
 							callback,
 							"GET"
 						);

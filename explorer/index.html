@@ -893,7 +893,7 @@
 				var request = {}
 
 				if (offset == 0) {
-					request = {method: "blockchain.block.get_header", params: [start_from]}
+					request = {method: "blockchain.block.header", params: [start_from]}
 				} else {
 					var start = (start_from - offset >= 0) ? start_from - offset : 0
 					var end = start_from

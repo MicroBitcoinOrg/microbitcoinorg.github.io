@@ -1291,7 +1291,7 @@
 
 			function displayHome() {
 				networkInfo().then(function(data) {
-					var db_height = data.result.daemon_height
+					var db_height = data.result.height
 					var display_height = $("#blocks-table tbody tr:first-child").attr("data-height")
 
 					if (db_height != display_height || $("#blocks-table tbody tr").length > 0) {

@@ -3572,7 +3572,7 @@
 
 			// Get address balance
 			function getBalance(address) {
-				return makeRequest({method: "blockchain.address.get_balance", params: [address]})
+				return makeRequest({method: "blockchain.address.balance", params: [address]})
 			}
 
 			// Get UTXOs for address

@@ -930,7 +930,7 @@
 
 			// Transaction info
 			function txInfo(hash) {
-				return makeRequest({method: "blockchain.transaction.get_verbose", params: [hash]})
+				return makeRequest({method: "blockchain.transaction.verbose", params: [hash]})
 			}
 
 			// Address info

@@ -897,7 +897,7 @@
 				} else {
 					var start = (start_from - offset >= 0) ? start_from - offset : 0
 					var end = start_from
-					request = {method: "blockchain.block.get_header_range", params: [start, end]}
+					request = {method: "blockchain.block.range", params: [start, end]}
 				}
 
 				return Promise.resolve($.ajax({
@@ -925,7 +925,7 @@
 
 			// Block info
 			function blockInfo(hash, tx_start = 0) {
-				return makeRequest({method: "blockchain.block.get_header_info", params: [hash, tx_start]})
+				return makeRequest({method: "blockchain.block.info", params: [hash, tx_start]})
 			}
 
 			// Transaction info

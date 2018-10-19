@@ -1112,7 +1112,7 @@
 				/* retreive the balance from a given address */
 				coinjs.addressBalance = function(address, callback){
 					coinjs.ajax(
-						coinjs.host + "?method=blockchain.address.get_balance&params[]=" + address,
+						coinjs.host + "?method=blockchain.address.balance&params[]=" + address,
 						callback,
 						"GET"
 					);

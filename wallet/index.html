@@ -142,13 +142,8 @@
 			.b-width {
 				width: 90px;
 			}
-			.responce-json {
-				overflow: auto;
-				padding: 16px;
-				background-color: #f6f8fa;
-				font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
-				font-size: 87.5%;
-				border-radius: 3px;
+			.navbar-dark .navbar-nav .nav-link.active {
+				color: rgba(255,255,255,.75);
 			}
 			.router-page {
 				display: none;
@@ -172,7 +167,7 @@
 			        -ms-hyphens: auto;
 			            hyphens: auto;
 			}
-			#qrCode canvas{
+			.qr-code canvas{
 				max-width: 100%;
 			}
 			[class*="entypo"]:before {
@@ -187,6 +182,7 @@
 			}
 		</style>
 		<title>Wallet</title>
+		<meta name="description" content="MicroBitcoin Web Wallet">
 	</head>
 	<body>
 		<!-- Navbar -->
@@ -202,10 +198,13 @@
 				<div class="collapse navbar-collapse" id="navbarResponsive">
 					<ul class="navbar-nav ml-auto">
 						<li class="nav-item">
-							<a href="#" class="nav-link mr-md-2">Home</a>
+							<a href="#" class="nav-link router-link mr-md-2" data-route="homepage">Home</a>
 						</li>
 						<li class="nav-item">
-							<a href="#/create" class="nav-link mr-md-2">Create</a>
+							<a href="#/create" class="nav-link router-link mr-md-2" data-route="create">Create</a>
+						</li>
+						<li class="nav-item">
+							<a href="#/broadcast" class="nav-link router-link mr-md-2" data-route="broadcast">Broadcast</a>
 						</li>
 						<li class="nav-item dropdown" id="network-list">
 							<a class="nav-item nav-link dropdown-toggle" href="#" id="network-versions" data-toggle="dropdown">NETWORK</a>
@@ -293,7 +292,7 @@
 						<div class="card-body">
 							<div class="text-center">
 								<div class="tab-item" data-tab="wallet-wallet">
-									<div id="qrCode"></div>
+									<div id="qr-code-addres" class="qr-code"></div>
 									<div id="wallet-address"></div>
 									<h3 class="wallet-balance mb-0 pb-0 c-pointer">Loading...</h3>
 									<div class="dropright mt-1">
@@ -338,7 +337,7 @@
 							</div>
 							
 							<div class="tab-item d-none" data-tab="wallet-keys">
-								<div id="wallet-keys" class="hidden">
+								<div id="wallet-keys">
 									<div id="wallet-keys-pubkey">
 										<label>Public Key</label>
 										<div class="input-group pb-2">
@@ -383,7 +382,7 @@
 						<b>Create wallet</b>
 					</div>
 					<div class="card-body">
-						<div id="create-keys" class="hidden">
+						<div id="create-keys">
 							<div id="create-keys-address">
 								<label>Address</label>
 								<div class="input-group pb-2">
@@ -418,6 +417,23 @@
 			</div>
 		</div>
 
+		<!-- Broadcast transaction -->
+		<div id="broadcast" class="router-page">
+			<div class="container">
+				<div class="card mb-3">
+					<div class="card-header">
+						<b>Broadcast transaction</b>
+					</div>
+					<div class="card-body">
+						<textarea class="form-control" id="transaction-broadcast-raw" placeholder="Enter your signed raw transaction" rows="4"></textarea>
+					</div>
+					<div class="card-footer">
+						<button id="footer-broadcast" type="button" class="btn btn-primary btn-block footer-item">Broadcast</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<div id="send-modal" class="modal" tabindex="-1" role="dialog">
 			<div class="modal-dialog modal-md" role="document">
 				<div class="modal-content">
@@ -436,7 +452,7 @@
 						</div>
 					</div>
 					<div class="modal-footer">
-						<button id="send-cancel" type="button" class="btn btn-block mr-auto btn-secondary" data-dismiss="modal">Cancel</button>
+						<button id="send-cancel" type="button" class="btn btn-block mr-auto btn-dark" data-dismiss="modal">Cancel</button>
 						<button id="send-confirm" type="button" class="btn btn-block mt-0 mr-auto btn-primary">Yes, send it!</button>
 					</div>
 				</div>
@@ -445,7 +461,7 @@
 
 		<div class="disclaimer mb-3">
 			<div class="container text-center">
-				<small class="text-muted">This page uses javascript to generate your addresses and sign your transactions within your browser, this means we never receive your private keys, this can be independently verified by reviewing the source code on github.</small>
+				<small class="text-muted" style="max-width: 1100px;">This page uses javascript to generate your addresses and sign your transactions within your browser, this means we never receive your private keys, this can be independently verified by reviewing the source code on github.</small>
 			</div>
 		</div>
 
@@ -458,7 +474,7 @@
 
 		<script>
 			// Config
-			var walletTimer = false;
+			var walletTimer = false
 			var networksConfigs = {
 				"MBC": {
 					"name": "Main Network (MBC)",
@@ -547,7 +563,8 @@
 				},
 				"tx": {
 					"loading-utxo": "Loading UTXOs...",
-					"generating": "Generating transaction..."
+					"generating": "Generating transaction...",
+					"success": "Transaction successfully broadcasted: ",
 				},
 				"title": {
 					"sure": "Are you sure?",
@@ -573,19 +590,15 @@
 				network = network.toUpperCase()
 				if (networksConfigs[network] != undefined & networksConfigs[network] != getApi()) {
 					setCookie("network", network, 60)
-					$("#blocks-table tbody").empty()
-					$("#block-info-hash").empty()
-					$("#data-address").empty()
-					$("#tx-info-hash").empty()
-					$("#charts").addClass("d-none")
 					closeWallet()
 					displayNetworks()
 				}
-				swithchPage(page)
+				switchPage(page)
 			}
 
 			// Display networks list
 			function displayNetworks() {
+				coinjsInit()
 				network = getApi()
 				$("#network-versions").text(network["name"])
 				$("#network-list .dropdown-menu").empty()
@@ -631,7 +644,9 @@
 				if (urlParams[0] == "#") {
 					var pageName = urlParams[1] != "" ? urlParams[1] : "homepage"
 					var templateName = "#" + pageName
-					
+						
+					$(".router-link").removeClass("active")
+					$(".router-link[data-route=" + pageName + "]").addClass("active")
 					if ($(".router-page:visible").attr("id") != urlParams[1]) {
 						$('div.router-page').hide()
 						if ($(templateName).length) {
@@ -649,6 +664,10 @@
 							setTitle("Create wallet")
 							break
 
+						case "broadcast":
+							setTitle("Broadcast transaction")
+							break
+
 						// Swith network
 						case "network":
 							network = urlParams[2]
@@ -659,7 +678,7 @@
 							break
 
 						default:
-							swithchPage()
+							switchPage()
 
 							break
 					}
@@ -667,7 +686,7 @@
 			}
 
 			// Switch router page
-			function swithchPage(url = "", params = []) {
+			function switchPage(url = "", params = []) {
 				params = params.length > 0 ? "/" + params.join("/") : ""
 				window.location.hash = "#" + "/" + url + params;
 			}
@@ -680,41 +699,6 @@
 			// Set window title
 			function setTitle(title) {
 				document.title = title + ' | MBC Wallet';
-			}
-
-			// Bocks request
-			function getBlocks(start_from, offset = 19) {
-				var request = {}
-
-				if (offset == 0) {
-					request = {method: "blockchain.block.get_header", params: [start_from]}
-				} else {
-					var start = (start_from - offset >= 0) ? start_from - offset : 0
-					var end = start_from
-					request = {method: "blockchain.block.get_header_range", params: [start, end]}
-				}
-				
-				return Promise.resolve($.ajax({
-					url: getApi()["api"],
-					data: request
-				})).then(function(blocks) {
-					result = {
-						"error": "error" in blocks,
-						"blocks": []
-					}
-					
-					if (!result["error"]) {
-						if (blocks.result.length != undefined) {
-							blocks = blocks.result.reverse()
-						} else {
-							blocks = [blocks.result]
-						}
-
-						result["blocks"] = blocks
-					}
-
-					return result
-				})
 			}
 
 			// Broadcast tx
@@ -761,24 +745,9 @@
 				}
 			}
 
-			// Convert timestamp to readable date
-			function timeFormat(timestamp) {	 
-				var months_arr = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-				var date = new Date(timestamp * 1000)
-				var year = date.getFullYear()
-				var month = months_arr[date.getMonth()]
-				var day = date.getDate()
-				var hours = date.getHours()
-				var minutes = "0" + date.getMinutes()
-				var seconds = "0" + date.getSeconds()
-				var convdataTime = month+'-'+day+'-'+year+' '+hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2)
-
-				return convdataTime
-			}
-
 			// Show big error message at the top of the page :D 
 			function showMessage(message) {
-				$("#error-message").text(message)
+				$("#error-message").html(message)
 				$("#error-message").removeClass("d-none")
 				setTimeout(function() {
 					$("#error-message").addClass("d-none")
@@ -786,8 +755,8 @@
 			}
 
 			function showQrAddress(text) {
-				$('#qrCode').empty()
-				$('#qrCode').qrcode(text)
+				$("#qr-code-addres").empty()
+				$("#qr-code-addres").qrcode(text)
 			}
 		</script>
 
@@ -799,7 +768,7 @@
 			 http://github.com/OutCast3k/coinjs or http://coinb.in/coinjs
 			*/
 
-			(function () {
+			function coinjsInit() {
 
 				var coinjs = window.coinjs = function () { };
 
@@ -2778,7 +2747,7 @@
 					return r;
 				}
 
-			})();
+			}
 		</script>
 
 		<!-- All magic is here :D -->
@@ -2906,19 +2875,20 @@
 
 						// then sign
 						var signed = txUnspent.sign(globalData.keys.wif)
+						console.log(signed)
 
-						txClone.broadcast(signed).then(function(data) {
-							if (!data.error) {
-								$("#status-screen span").html(`
-									<a href="` + blockExplorer.tx(data.data.txhash) + `" target="_blank">` + data.data.txhash + `</a> 
-								`)
-								$('#send-title').text(messages.title["success"])
-							} else {
-								$("#status-screen span").html(messages.error["broadcast-failed"])
-								$('#send-title').text(messages.title["failed"])
-							}
-							resetTxForm()
-						})
+						// txClone.broadcast(signed).then(function(data) {
+						// 	if (!data.error) {
+						// 		$("#status-screen span").html(`
+						// 			<a href="` + blockExplorer.tx(data.data.txhash) + `" target="_blank">` + data.data.txhash + `</a> 
+						// 		`)
+						// 		$('#send-title').text(messages.title["success"])
+						// 	} else {
+						// 		$("#status-screen span").html(messages.error["broadcast-failed"])
+						// 		$('#send-title').text(messages.title["failed"])
+						// 	}
+						// 	resetTxForm()
+						// })
 					} else {
 						showMessage(messages.error["not-enough-funds"])
 					}
@@ -2939,6 +2909,20 @@
 				$("#create-keys-address input").val(coin.address)
 				$("#create-keys-pubkey input").val(coin.pubkey)
 				$("#create-keys-privkey input").val(coin.wif)
+			})
+
+			$("#footer-broadcast").click(function(){
+				var rawtx = $("#transaction-broadcast-raw")
+				txBroadcast(rawtx.val()).then(function(data) {
+					if (!data.error) {
+						showMessage(`
+							${messages.tx["success"]}<a href="` + blockExplorer.tx(data.data.txhash) + `" target="_blank">` + data.data.txhash + `</a>
+						`)
+					} else {
+						showMessage(messages.error["broadcast-failed"])
+					}
+				})
+				rawtx.val("")
 			})
 
 			function resetTxForm() {
@@ -3016,9 +3000,9 @@
 				})
 
 				$("#open-key-form").submit(function(e){
-					var wif = $("#passphrase").val()
+					var wif = $("#passphrase").val().trim()
 					var wifLength = wif.length
-					if (coinjs.wif2privkey(wif).privkey != "" && wifLength == 52) {
+					if (wifLength == 52 && coinjs.wif2privkey(wif).privkey != "") {
 						globalData.keys = coinjs.getKeys(wif)
 						$("#passphrase").val("")
 						openWallet(globalData.keys, false)

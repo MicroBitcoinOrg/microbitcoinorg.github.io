@@ -2875,20 +2875,19 @@
 
 						// then sign
 						var signed = txUnspent.sign(globalData.keys.wif)
-						console.log(signed)
 
-						// txClone.broadcast(signed).then(function(data) {
-						// 	if (!data.error) {
-						// 		$("#status-screen span").html(`
-						// 			<a href="` + blockExplorer.tx(data.data.txhash) + `" target="_blank">` + data.data.txhash + `</a> 
-						// 		`)
-						// 		$('#send-title').text(messages.title["success"])
-						// 	} else {
-						// 		$("#status-screen span").html(messages.error["broadcast-failed"])
-						// 		$('#send-title').text(messages.title["failed"])
-						// 	}
-						// 	resetTxForm()
-						// })
+						txClone.broadcast(signed).then(function(data) {
+							if (!data.error) {
+								$("#status-screen span").html(`
+									<a href="` + blockExplorer.tx(data.data.txhash) + `" target="_blank">` + data.data.txhash + `</a> 
+								`)
+								$('#send-title').text(messages.title["success"])
+							} else {
+								$("#status-screen span").html(messages.error["broadcast-failed"])
+								$('#send-title').text(messages.title["failed"])
+							}
+							resetTxForm()
+						})
 					} else {
 						showMessage(messages.error["not-enough-funds"])
 					}

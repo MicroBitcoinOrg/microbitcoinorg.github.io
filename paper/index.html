@@ -203,6 +203,11 @@
 					padding-left: 15px;
 				}
 			}
+			@media (max-width: 767px) {
+				.key-mb {
+					margin-bottom: 15px;
+				}
+			}
 			@media print {
 				body * {
 					visibility: hidden;
@@ -226,7 +231,8 @@
 				}
 			}
 		</style>
-		<title>Wallet</title>
+		<title>PaperWallet</title>
+		<meta name="description" content="MicroBitcoin Paper Wallet">
 	</head>
 	<body>
 		<!-- Navbar -->
@@ -276,7 +282,7 @@
 						<div id="paper-wallet" class="card-body">
 							<div id="create-keys" class="hidden d-none">
 								<div class="row">
-									<div class="col-md-4 text-center">
+									<div class="col-md-4 col-sm-12 col-xs-12 key-mb text-center">
 										<div id="qr-code-address" class="qr-code"></div>
 										<div id="create-keys-address">
 											<div>
@@ -290,7 +296,7 @@
 											</div>
 										</div>
 									</div>
-									<div class="col-md-4 text-center">
+									<div class="col-md-4 col-sm-12 col-xs-12 key-mb text-center">
 										<div id="qr-code-pubkey" class="qr-code"></div>
 										<div id="create-keys-pubkey">
 											<div>
@@ -306,7 +312,7 @@
 											</div>
 										</div>
 									</div>
-									<div class="col-md-4 text-center">
+									<div class="col-md-4 col-sm-12 col-xs-12 text-center">
 										<div id="qr-code-privkey" class="qr-code"></div>
 										<div id="create-keys-privkey">
 											<div>
@@ -336,8 +342,8 @@
 		</div>
 
 		<div class="disclaimer mb-3">
-			<div class="container text-center" style="max-width: 1100px;">
-				<small class="text-muted">This page uses javascript to generate your addresses within your browser, this means we never receive your private keys, this can be independently verified by reviewing the source code on github.</small>
+			<div class="container text-center">
+				<small class="text-muted" style="max-width: 1100px;">This page uses javascript to generate your addresses within your browser, this means we never receive your private keys, this can be independently verified by reviewing the source code on github.</small>
 			</div>
 		</div>
 

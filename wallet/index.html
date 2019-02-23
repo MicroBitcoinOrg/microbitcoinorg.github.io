@@ -3001,10 +3001,14 @@
 				$("#open-key-form").submit(function(e){
 					var wif = $("#passphrase").val().trim()
 					var wifLength = wif.length
-					if (wifLength == 52 && coinjs.wif2privkey(wif).privkey != "") {
-						globalData.keys = coinjs.getKeys(wif)
-						$("#passphrase").val("")
-						openWallet(globalData.keys, false)
+					if (coinjs.wif2privkey(wif).privkey != "") {
+						if (wifLength == 51 || wifLength == 52) {
+							globalData.keys = coinjs.getKeys(wif)
+							$("#passphrase").val("")
+							openWallet(globalData.keys, false)
+						} else {
+							showMessage(messages.error["bad-priv-key"])
+						}
 					} else {
 						showMessage(messages.error["bad-priv-key"])
 					}

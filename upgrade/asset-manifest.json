@@ -1,14 +1,14 @@
 {
-  "main.css": "./static/css/main.a04257a8.chunk.css",
-  "main.js": "./static/js/main.479a3bf8.chunk.js",
-  "main.js.map": "./static/js/main.479a3bf8.chunk.js.map",
-  "runtime~main.js": "./static/js/runtime~main.fdfcfda2.js",
-  "runtime~main.js.map": "./static/js/runtime~main.fdfcfda2.js.map",
-  "static/js/2.34f7e0e6.chunk.js": "./static/js/2.34f7e0e6.chunk.js",
-  "static/js/2.34f7e0e6.chunk.js.map": "./static/js/2.34f7e0e6.chunk.js.map",
-  "index.html": "./index.html",
-  "precache-manifest.807699676a55d48d29803804e93b115b.js": "./precache-manifest.807699676a55d48d29803804e93b115b.js",
-  "service-worker.js": "./service-worker.js",
-  "static/css/main.a04257a8.chunk.css.map": "./static/css/main.a04257a8.chunk.css.map",
-  "static/media/forest.mp4": "./static/media/forest.ca0d90f3.mp4"
+  "main.css": "/upgrade/static/css/main.a04257a8.chunk.css",
+  "main.js": "/upgrade/static/js/main.59df2966.chunk.js",
+  "main.js.map": "/upgrade/static/js/main.59df2966.chunk.js.map",
+  "runtime~main.js": "/upgrade/static/js/runtime~main.471f517e.js",
+  "runtime~main.js.map": "/upgrade/static/js/runtime~main.471f517e.js.map",
+  "static/js/2.34f7e0e6.chunk.js": "/upgrade/static/js/2.34f7e0e6.chunk.js",
+  "static/js/2.34f7e0e6.chunk.js.map": "/upgrade/static/js/2.34f7e0e6.chunk.js.map",
+  "index.html": "/upgrade/index.html",
+  "precache-manifest.58fd0574f7976f7c668b79a49671f3fc.js": "/upgrade/precache-manifest.58fd0574f7976f7c668b79a49671f3fc.js",
+  "service-worker.js": "/upgrade/service-worker.js",
+  "static/css/main.a04257a8.chunk.css.map": "/upgrade/static/css/main.a04257a8.chunk.css.map",
+  "static/media/forest.mp4": "/upgrade/static/media/forest.ca0d90f3.mp4"
 }

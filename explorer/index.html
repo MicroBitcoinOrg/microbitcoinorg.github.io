@@ -283,52 +283,46 @@
 			function showCharts(data) {
 				$("#charts").removeClass("d-none")
 				Highcharts.chart('network-chart', {
-
 					chart: {
 						type: 'spline',
 						height: 240
 					},
-
 					title: {
 						text: ''
 					},
-
-					colors: ["#7cb5ec", "#434348", "#90ed7d", "#f7a35c", "#8085e9", "#f15c80", "#e4d354", "#2b908f", "#f45b5b", "#91e8e1"],
-
 					xAxis: [{
 						categories: [].concat(data["blocks"]).reverse(),
 						crosshair: true,
 						labels: {
 							enabled: true,
-							step: 1			
+							step: 1
 							}
 						}],
-
 					yAxis: [{ labels: { enabled: false}, title: { text: null }},
 							{ labels: { enabled: false}, title: { text: null }},
 							{ labels: { enabled: false}, title: { text: null }, opposite: true },
 							{ labels: { enabled: false}, title: { text: null }},
 							{ labels: { enabled: false}, title: { text: null }}
 							],		
-					
 					tooltip: {
 						shared: true,
 						formatter: function() {
 							var s = '<b>'+ this.x +'</b>';
 
 							$.each(this.points, function(i, point) {
-								s += '<br/><span style="color:' + point.color + '">\u25CF</span>: ' + point.series.name + ': ' + point.y;
-								// if(i==4) s+= ' MH';
+								text = point.y
+								if (i == 3) { text = convertHashes(point.y) }
+								
+								s += '<br/><span style="color:' + point.color + '">\u25CF</span>: ' + point.series.name + ': ' + text;
 							});
 
 							return s;
 						},
 					},
-
 					plotOptions: {
 						series: {
 							label: {
-								connectorAllowed: false
+								connectorAllowed: true
 							},
 							marker: {
 								enabled: false,
@@ -336,7 +330,6 @@
 							}
 						}
 					},
-
 					series: [{
 							name: 'Difficulty',
 							data: [].concat(data["diffs"]).reverse(),
@@ -354,8 +347,12 @@
 							data: [].concat(data["sizes"]).reverse(),
 							yAxis: 3,
 							color: '#f7a35c'
+							}, {
+							name: 'Network hashrate',
+							data: [].concat(data["nethash"]).reverse(),
+							yAxis: 4,
+							color: '#ff2a65'
 							}],
-
 					responsive: {
 						rules: [{
 							condition: {
@@ -370,9 +367,27 @@
 							}
 						}]
 					}
-
 				});
 				$('.highcharts-credits').hide();
+			}
+
+			// Convert amount of hashes to readable form
+			function convertHashes(hashes) {
+				if (hashes >= 1000000000000000000000) {
+					return (hashes / 1000000000000000000000).toFixed(2) + ' Zh/s'
+				} else if (hashes >= 1000000000000000000) {
+					return (hashes / 1000000000000000000).toFixed(2) + ' Eh/s'
+				} else if (hashes >= 1000000000000000) {
+					return (hashes / 1000000000000000).toFixed(2) + ' Ph/s'
+				} else if (hashes >= 1000000000000) {
+					return (hashes / 1000000000000).toFixed(2) + ' Th/s'
+				} else if (hashes >= 1000000000) {
+					return (hashes / 1000000000).toFixed(2) + ' Gh/s'
+				} else if (hashes >= 1000000) {
+					return (hashes / 1000000).toFixed(2) + ' Mh/s'
+				} else {
+					return (hashes / 1000).toFixed(2) + ' H/s'
+				}
 			}
 
 			// Display doc links
@@ -1075,7 +1090,8 @@
 									"blocks": [],
 									"sizes": [],
 									"timestamps": [],
-									"txs": []
+									"txs": [],
+									"nethash": []
 								}
 
 								$.each(blocks["blocks"].reverse(), function(index, block) {
@@ -1084,6 +1100,7 @@
 									chart_data["sizes"].push(block["size"])
 									chart_data["timestamps"].push(block["timestamp"])
 									chart_data["txs"].push(block["tx_count"])
+									chart_data["nethash"].push(block["nethash"])
 								})
 
 								showCharts(chart_data)

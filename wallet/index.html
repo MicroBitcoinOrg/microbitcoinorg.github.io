@@ -703,12 +703,12 @@
 
 			// Broadcast tx
 			function txBroadcast(rawtx) {
-				return makeRequest({method: "blockchain.transaction.send", params: [rawtx]}, "POST")
+				return makeRequest({method: "blockchain.transaction.send", params: [rawtx]})
 			}
 
 			// Estimate fee
 			function estimateFee() {
-				return makeRequest({method: "blockchain.estimatesmartfee", params: ["30"]}, "POST")
+				return makeRequest({method: "blockchain.estimatesmartfee", params: ["30"]})
 			}
 
 			// Make request :D

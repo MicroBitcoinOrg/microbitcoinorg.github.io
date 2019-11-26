@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+		<link rel="stylesheet" href="https://volbil.github.io/business-tycoon/business-tycoon.min.css">
+		<link rel="stylesheet" href="https://volbil.github.io/entypo/entypo.css">
+		<link href="/static/favicon.ico" rel="icon" type="image/x-icon">
+		
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+		<style>
+			html {
+				height: 100%;
+			}
+			html, body {
+				min-height: 100%;
+			}
+			body {
+				padding-top: 75px;
+				padding-bottom: 56px;
+				position: relative;
+			}
+			#supply {
+				cursor: pointer;
+			}
+			#qrCode canvas{
+				max-width: 100%;
+			}
+			.router-page {
+				display: none;
+			}
+			.flex-center {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+			[class*="entypo"]:before {
+				font-family: 'EntypoRegular', sans-serif;
+				font-size: 16px;
+			}
+			@media (max-width: 991.98px) {
+				.navbar-expand-lg>.container, .navbar-expand-lg>.container-fluid {
+					padding-right: 15px;
+					padding-left: 15px;
+				}
+			}
+			code {
+				background: #3f3f3f;
+				color: #ffffff;
+				padding: 3px;
+				border-radius: 5px;
+			}
+			.modal-dialog {
+				max-width: 530px;
+			}
+
+			#json-input {
+				display: block;
+				width: 100%;
+				height: 200px;
+			}
+			#translate {
+				display: block;
+				height: 28px;
+				margin: 20px 0;
+				border-radius: 3px;
+				border: 2px solid;
+				cursor: pointer;
+			}
+			.json-display {
+				border: 1px solid #000;
+				margin: 0;
+				padding: 10px 20px;
+			}
+		</style>
+		<title>API Documentation</title>
+		<meta name="description" content="MicroBitcoin API Documentation">
+
+		<script>
+			!function(){var e='/* Syntax highlighting for JSON objects */ .json-editor-blackbord {   background: #202020;   color: #fff;   font-size: 13px;   font-family: Menlo,Monaco,Consolas,"Courier New",monospace; } @media screen and (min-width: 1600px) {   .json-editor-blackbord {	 font-size: 14px;   } }  ul.json-dict, ol.json-array {   list-style-type: none;   margin: 0 0 0 1px;   border-left: 1px dotted #525252;   padding-left: 2em; } .json-string {   /*color: #0B7500;*/   /*color: #BCCB86;*/   color: #0ad161; } .json-literal {   /*color: #1A01CC;*/   /*font-weight: bold;*/   color: #ff8c00; } .json-url {   color: #1e90ff; } .json-property {   color: #4fdee5;   line-height: 160%;   font-weight: 500; }  /* Toggle button */ a.json-toggle {   position: relative;   color: inherit;   text-decoration: none;   cursor: pointer; } a.json-toggle:focus {   outline: none; } a.json-toggle:before {   color: #aaa;   content: "\\25BC"; /* down arrow */   position: absolute;   display: inline-block;   width: 1em;   left: -1em; } a.json-toggle.collapsed:before {   transform: rotate(-90deg); /* Use rotated down arrow, prevents right arrow appearing smaller than down arrow in some browsers */   -ms-transform: rotate(-90deg);   -webkit-transform: rotate(-90deg); }   /* Collapsable placeholder links */ a.json-placeholder {   color: #aaa;   padding: 0 1em;   text-decoration: none;   cursor: pointer; } a.json-placeholder:hover {   text-decoration: underline; }',o=function(e){var o=document.getElementsByTagName("head")[0],t=document.createElement("style");if(o.appendChild(t),t.styleSheet)t.styleSheet.disabled||(t.styleSheet.cssText=e);else try{t.innerHTML=e}catch(n){t.innerText=e}};o(e)}(),function(e){function o(e){return e instanceof Object&&Object.keys(e).length>0}function t(e){var o=/^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;return o.test(e)}function n(e,r){var s="";if("string"==typeof e)e=e.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"),s+=t(e)?'<a href="'+e+'" class="json-string json-url">"'+e+'"</a>':'<span class="json-string">"'+e+'"</span>';else if("number"==typeof e)s+='<span class="json-literal json-literal-number">'+e+"</span>";else if("boolean"==typeof e)s+='<span class="json-literal json-literal-boolean">'+e+"</span>";else if(null===e)s+='<span class="json-literal json-literal-null">null</span>';else if(e instanceof Array)if(e.length>0){s+='[<ol class="json-array">';for(var l=0;l<e.length;++l)s+="<li>",o(e[l])&&(s+='<a href class="json-toggle"></a>'),s+=n(e[l],r),l<e.length-1&&(s+=","),s+="</li>";s+="</ol>]"}else s+="[]";else if("object"==typeof e){var a=Object.keys(e).length;if(a>0){s+='{<ul class="json-dict">';for(var i in e)if(e.hasOwnProperty(i)){s+="<li>";var c=r.withQuotes?'<span class="json-string json-property">"'+i+'"</span>':'<span class="json-property">'+i+"</span>";s+=o(e[i])?'<a href class="json-toggle"></a>'+c:c,s+=": "+n(e[i],r),--a>0&&(s+=","),s+="</li>"}s+="</ul>}"}else s+="{}"}return s}e.fn.jsonViewer=function(t,r){return r=r||{},this.each(function(){var s=n(t,r);o(t)&&(s='<a href class="json-toggle"></a>'+s),e(this).html(s),e(this).off("click"),e(this).on("click","a.json-toggle",function(){var o=e(this).toggleClass("collapsed").siblings("ul.json-dict, ol.json-array");if(o.toggle(),o.is(":visible"))o.siblings(".json-placeholder").remove();else{var t=o.children("li").length,n=t+(t>1?" items":" item");o.after('<a href class="json-placeholder">'+n+"</a>")}return!1}),e(this).on("click","a.json-placeholder",function(){return e(this).siblings("a.json-toggle").click(),!1}),1==r.collapsed&&e(this).find("a.json-toggle").click()})}}(jQuery),function(e){function o(e){var o={'"':'\\"',"\\":"\\\\","\b":"\\b","\f":"\\f","\n":"\\n","\r":"\\r","	":"\\t"};return e.replace(/["\\\b\f\n\r\t]/g,function(e){return o[e]})}function t(e){if("string"==typeof e)return o(e);if("object"==typeof e)for(var n in e)e[n]=t(e[n]);else if(Array.isArray(e))for(var r=0;r<e.length;r++)e[r]=t(e[r]);return e}function n(o,t,n){n=n||{},n.editable!==!1&&(n.editable=!0),this.$container=e(o),this.options=n,this.load(t)}n.prototype={constructor:n,load:function(e){this.$container.jsonViewer(t(e),{collapsed:this.options.defaultCollapsed,withQuotes:!0}).addClass("json-editor-blackbord").attr("contenteditable",!!this.options.editable)},get:function(){try{return this.$container.find(".collapsed").click(),JSON.parse(this.$container.text())}catch(e){throw new Error(e)}}},window.JsonEditor=n}(jQuery);
+		</script>
+	</head>
+	<body>
+		<!-- Navbar -->
+		<nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
+			<div class="container">
+				<a href="#" class="navbar-brand">
+					<svg id="logo" style="max-width: 15px;margin-top: -5px;margin-right: 5px;" data-name="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 290.82 480"><defs><style>.cls-1{fill:#fff;}</style></defs><title>mbc_whiteicon</title><path class="cls-1" d="M110.59,412.2q0-154.62,0-309.25c.08-.4.19-.8.24-1.2.26-1.9.37-3.82.78-5.68C115.3,79.56,128.94,68,146.06,66.85c2.9-.19,5.82,0,8.88,0V65q0-11.51,0-23a21,21,0,0,1,2.72-10.45c4.19-7.45,10.78-11.77,18.8-14.11,2.28-.66,4.65-1,7-1.48h7.2a4.15,4.15,0,0,0,.79.25,34.53,34.53,0,0,1,13,4c9.41,5.18,15,12.69,14.72,23.91-.18,7,0,14,0,21v1.48h36.33V64.93q0-11.44,0-22.88a20.7,20.7,0,0,1,2.25-9.56c4.08-8,10.9-12.53,19.27-15,2.28-.67,4.66-1,7-1.47h7.2a5.89,5.89,0,0,0,.93.26,34.58,34.58,0,0,1,12.71,3.87c9.59,5.23,15.17,12.89,14.86,24.28-.21,7.57,0,15.15-.06,22.73,0,1,.23,1.44,1.34,1.68,27.3,5.89,48.79,20.41,64.25,43.67a96.28,96.28,0,0,1,15.73,45c.15,1.6.35,3.2.53,4.8v9.21a7,7,0,0,0-.23.94c-.43,3.81-.58,7.67-1.3,11.42-6.09,32.14-23.7,55.91-52.3,71.64-1.33.73-2.7,1.38-4.19,2.14.38.22.57.35.78.45a99.39,99.39,0,0,1,34.49,27,98.22,98.22,0,0,1,22.22,53.8c.15,1.6.35,3.19.53,4.79v9.21a5,5,0,0,0-.23.94,94.9,94.9,0,0,1-11,40.3c-15,28-38.19,45.41-69.22,52.3-1.05.23-1.4.56-1.39,1.65,0,7,0,14,0,21a23.11,23.11,0,0,1-7,17c-12,12.2-34,13.36-47.5,2.52-6.43-5.17-10-11.71-9.74-20.16.16-6.09,0-12.19,0-18.28v-1.55H219.1v1.65c0,6.29-.05,12.57,0,18.86a23.08,23.08,0,0,1-7.45,17.46c-11.8,11.42-32.44,12.69-46,2.81-7.11-5.19-11-12-10.8-21.09.15-6,0-12.09,0-18.14v-1.64h-7.19a37.26,37.26,0,0,1-36.31-30.21C111.07,416.26,110.87,414.23,110.59,412.2ZM234.1,196.25h62.18c7.14,0,14.3-.17,21.43.05a31.46,31.46,0,1,0,1.48-62.89l-41.58,0H229.15l-48,0c-22.34,0-37.63,22.6-29.06,43.23,2,4.93,4.92,9.52,7.46,14.24,3.92,7.25,7.88,14.47,11.83,21.7l14,25.73q5.51,10.09,11,20.2a1.55,1.55,0,0,1,0,1.26q-5.52,10.08-11.11,20.13L169.4,308.47c-4.71,8.51-9.33,17.06-14.14,25.52-3.28,5.77-5.92,11.65-6.13,18.47-.48,15.47,11,29.58,26.26,31.76,3.6.51,7.34.06,11,.06H287.54c8.68,0,17.36,0,26,0,4.5,0,9,.34,13.47-.7a31.45,31.45,0,0,0,24.24-35.62c-2-14.28-14.62-25.83-29-26.44-5.83-.25-11.68-.13-17.53-.12-7.23,0-14.46.08-21.69.08s-14.74-.08-22.12-.08-14.45.06-21.68.09H234.2c.43-.83.72-1.42,1-2l10.44-18.86,14.06-25.4c5.31-9.59,5.88-19.41,1.25-29.38-1.77-3.82-3.94-7.45-6-11.15q-7.9-14.51-15.82-29C237.54,202.61,235.88,199.54,234.1,196.25Z" transform="translate(-110.59 -16)"/></svg>
+					<b>API</b>
+				</a>
+				<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarResponsive">
+					<ul class="navbar-nav ml-auto">
+						<li class="nav-item">
+							<a href="https://github.com/MicroBitcoinOrg/ApiServer" class="nav-link" target="_blank">GitHub</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+	
+		<div class="container">
+			<div id="docs"></div>
+		</div>
+	
+		<!-- Footer :3 -->
+		<footer class="mb-3">
+			<div class="container text-center">
+				Made with <span class="entypo heart text-danger"></span> by <a target="_blank" href="https://github.com/volbil/blockchain-explorer">Volbil</a>
+			</div>
+		</footer>
+
+		<script>
+			var uri = 'https://api.mbc.wiki'
+			var api = [
+				{
+					'name': '/info',
+					'example': '/info',
+					'description': 'This method return current info about MicroBitcoin network.',
+					'method': 'GET',
+					'id': 'info'
+				}, {
+					'name': '/height/int:height',
+					'example': '/height/1',
+					'description': 'This method return block info by given height.',
+					'base': '/height/',
+					'method': 'GET',
+					'id': 'height',
+					'params': [
+						{
+							'title': 'height',
+							'description': 'Block height',
+							'example': 1,
+							'key': true
+						}, {
+							'title': 'offset',
+							'description': 'Offset of transactions list',
+							'default': 0
+						}
+					]
+				}, {
+					'name': '/block/string:hash',
+					'example': '/block/14c03ecf20edc9887fb98bf34b53809f063fc491e73f588961f764fac88ecbae',
+					'description': 'This method return block info by given hash.',
+					'base': '/block/',
+					'method': 'GET',
+					'id': 'block',
+					'params': [
+						{
+							'title': 'hash',
+							'description': 'Block hash',
+							'example': '14c03ecf20edc9887fb98bf34b53809f063fc491e73f588961f764fac88ecbae',
+							'key': true
+						}, {
+							'title': 'offset',
+							'description': 'Offset of transactions list',
+							'default': 0
+						}
+					]
+				}, {
+					'name': '/header/string:hash',
+					'example': '/header/14c03ecf20edc9887fb98bf34b53809f063fc491e73f588961f764fac88ecbae',
+					'description': 'This method return block header by given hash.',
+					'base': '/header/',
+					'method': 'GET',
+					'id': 'header',
+					'params': [
+						{
+							'title': 'hash',
+							'description': 'Header hash',
+							'example': '14c03ecf20edc9887fb98bf34b53809f063fc491e73f588961f764fac88ecbae',
+							'key': true
+						}
+					]
+				}, {
+					'name': '/range/int:height',
+					'example': '/range/100?offset=3',
+					'description': 'This method return range of blocks staring from certain height.',
+					'base': '/range/',
+					'method': 'GET',
+					'id': 'range',
+					'params': [
+						{
+							'title': 'height',
+							'description': 'Height of range start',
+							'example': 1,
+							'key': true
+						}, {
+							'title': 'offset',
+							'description': 'Number of blocks required',
+							'example': 3,
+							'default': 30
+						}
+					]
+				}, {
+					'name': '/balance/string:address',
+					'example': '/balance/BfSf3YKJ84P2vhSYLZkTCJvAmDtZs79XBH',
+					'description': 'This method return address balance.',
+					'base': '/balance/',
+					'method': 'GET',
+					'id': 'balance',
+					'params': [
+						{
+							'title': 'address',
+							'description': 'Request address',
+							'example': 'BfSf3YKJ84P2vhSYLZkTCJvAmDtZs79XBH',
+							'key': true
+						}
+					]
+				}, {
+					'name': '/mempool/string:address',
+					'example': '/mempool/BfSf3YKJ84P2vhSYLZkTCJvAmDtZs79XBH',
+					'description': 'This method return address mempool transactions.',
+					'base': '/mempool/',
+					'method': 'GET',
+					'id': 'mempool',
+					'params': [
+						{
+							'title': 'address',
+							'description': 'Request address',
+							'example': 'BfSf3YKJ84P2vhSYLZkTCJvAmDtZs79XBH',
+							'key': true
+						}
+					]
+				}, {
+					'name': '/unspent/string:address',
+					'example': '/unspent/BfSf3YKJ84P2vhSYLZkTCJvAmDtZs79XBH?amount=1',
+					'description': 'This method return address unspent outputs.',
+					'base': '/unspent/',
+					'method': 'GET',
+					'id': 'unspent',
+					'params': [
+						{
+							'title': 'address',
+							'description': 'Request address',
+							'example': 'BfSf3YKJ84P2vhSYLZkTCJvAmDtZs79XBH',
+							'key': true
+						}, {
+							'title': 'amount',
+							'description': 'Required amount',
+							'example': 1,
+							'default': 0
+						}
+					]
+				}, {
+					'name': '/history/string:address',
+					'example': '/history/BfSf3YKJ84P2vhSYLZkTCJvAmDtZs79XBH',
+					'description': 'This method return list of address transaction hashes.',
+					'base': '/history/',
+					'method': 'GET',
+					'id': 'history',
+					'params': [
+						{
+							'title': 'address',
+							'description': 'Request address',
+							'example': 'BfSf3YKJ84P2vhSYLZkTCJvAmDtZs79XBH',
+							'key': true
+						}, {
+							'title': 'offset',
+							'description': 'Offset of transactions list',
+							'example': 0,
+							'default': 0
+						}
+					]
+				}, {
+					'name': '/transaction/string:hash',
+					'example': '/transaction/957fc74933dcfc7da179bd53d01b2a7f8ffda4daa7a39b83656acf52ef772070',
+					'description': 'This method return info about transaction.',
+					'base': '/transaction/',
+					'method': 'GET',
+					'id': 'transaction',
+					'params': [
+						{
+							'title': 'hash',
+							'description': 'Transaction hash',
+							'example': '957fc74933dcfc7da179bd53d01b2a7f8ffda4daa7a39b83656acf52ef772070',
+							'key': true
+						}
+					]
+				}, {
+					'name': '/mempool',
+					'example': '/mempool',
+					'description': 'This method return info about mempool.',
+					'method': 'GET',
+					'id': 'mempool-info'
+				}, {
+					'name': '/supply',
+					'example': '/supply',
+					'description': 'This method return info about current coins supply.',
+					'method': 'GET',
+					'id': 'supply'
+				}, {
+					'name': '/fee',
+					'example': '/fee',
+					'description': 'This method return recomended transaction fee.',
+					'method': 'GET',
+					'id': 'fee'
+				}, {
+					'name': '/decode/string:raw',
+					'example': '/decode/0100000001c8c14eceaa84c5b45e28b4ab43bb1354960e5cf65ee480a281ebdce66e4f84cb010000006b483045022100bcf51d6111d3f23a23689d1956e010433e4ea65a3680211e5e442e229ccedd59022049e89b4762788d1718ebc5f6c300d2a898f161f22e08a6a8e55b96fb555865220121021121f5e63f7537a6c8e8881b0c54c5914cd117e775c3be0486205c45eced9117fdffffff02e8030000000000001976a9147fd7e409fc303e407a933b3392aa197c66348da688ac78630100000000001976a914436072406255f648da990ea1fa902cb98c4b6e2088ac00000000',
+					'description': 'This method return decoded info about transaction.',
+					'base': '/decode/',
+					'method': 'GET',
+					'id': 'decode',
+					'params': [
+						{
+							'title': 'transaction',
+							'description': 'Signed transaction',
+							'example': '0100000001c8c14eceaa84c5b45e28b4ab43bb1354960e5cf65ee480a281ebdce66e4f84cb010000006b483045022100bcf51d6111d3f23a23689d1956e010433e4ea65a3680211e5e442e229ccedd59022049e89b4762788d1718ebc5f6c300d2a898f161f22e08a6a8e55b96fb555865220121021121f5e63f7537a6c8e8881b0c54c5914cd117e775c3be0486205c45eced9117fdffffff02e8030000000000001976a9147fd7e409fc303e407a933b3392aa197c66348da688ac78630100000000001976a914436072406255f648da990ea1fa902cb98c4b6e2088ac00000000',
+							'key': true
+						}
+					]
+				}, {
+					'name': '/broadcast',
+					'example': '/broadcast',
+					'description': 'This method broadcast raw signed transaction to MicroBitcoin network.',
+					'method': 'POST',
+					'id': 'broadcast',
+					'response': {
+						'result': '8d0f52a1177c7a954cf4f952532c49c8d55f9437539b544d92f83c14e1929950',
+						'error': null,
+						'id': 'api-server'
+					},
+					'params': [
+						{
+							'title': 'raw',
+							'description': 'Signed raw transaction'
+						}
+					]
+				}
+			]
+
+			for (var i = 0; i < api.length; i++) {
+				var options = ''
+				if (api[i].params != undefined) {
+					var params = api[i].params
+					for (var j = 0; j < params.length; j++) {
+						options += `
+							<div class="example-input input-group mt-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text">
+										${params[j].title}
+									</span>
+								</div>
+								<input type="text" data-example="${params[j].example != undefined ? params[j].example : ''}" data-name="${params[j].title}" data-key="${params[j].key != undefined ? params[j].key : 'false'}" class="form-control docs-input" placeholder="${params[j].description} ${params[j].default != undefined ? `(default: ${params[j].default})` : ''}">
+							</div>`
+					}
+				}
+
+				var content = `
+					<div class="card mb-3 api-doc-block" data-example-base="${uri}${api[i].base}" data-request-method="${api[i].method}">
+						<div class="card-header">
+							<span>
+								<span class="mr-1 badge badge-success">${api[i].method}</span>
+							</span>
+							<b>${api[i].name}</b>
+							<div class="float-right">
+								<button style="padding: 0rem .5rem;" class="btn btn-primary btn-sm" onclick="docs('${api[i].id}', '${api[i].method}')">
+									Run <span class="entypo right"></span>
+								</button>
+							</div>
+						</div>
+						<div class="card-body">
+							<div class="row">
+								<div class="col-12">
+									<div class="mb-3">
+										${api[i].description}
+									</div>
+									<div id="${api[i].id}">
+										<div class="card">
+											<div class="card-header" style="padding: .5rem 1.25rem;">
+												<a id="${api[i].id}-link" href="${uri}${api[i].example}" class="doc-link" target="_blank">
+													${uri}${api[i].example}
+												</a>
+											</div>
+											<pre class="json-display d-none"></pre>
+											<span class="loading">
+												<div class="text-center">
+													<div class="spinner-border" role="status" style="margin: 20px;">
+														<span class="sr-only">Loading...</span>
+													</div>
+												</div>
+											</span>
+										</div>
+										${options}
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>`
+
+				$('#docs').append(content)
+				if (api[i].response == undefined) {
+					docs(api[i].id)
+				} else {
+					display(api[i].id, api[i].response)
+				}
+			}
+
+			function request(url, method, data) {
+				return Promise.resolve($.ajax({
+					'method': method,
+					'url': url,
+					'data': data
+				})).then(function(data) {
+					return data
+				})
+			}
+
+			function docs(tag, method = 'GET') {
+				$(`#${tag} pre`).addClass('d-none')
+				$(`#${tag} span.loading`).removeClass('d-none')
+
+				var link = $(`#${tag}-link`).attr('href')
+				var params = {}
+
+				if (method == 'POST') { params = inputs($(`#${tag}`))[1] }
+
+				request(link, method, params).then(function(data) {
+					display(tag, data)
+				})
+			}
+
+			function display(tag, data) {
+				new JsonEditor(`#${tag} pre`, data)
+				$(`#${tag} pre`).removeClass('d-none')
+				$(`#${tag} span.loading`).addClass('d-none')
+			}
+
+			function inputs(docs) {
+				var params = {}
+				var base = docs.attr('data-example-base')
+
+				docs.find('.example-input').each(function() {
+					var input = $(this).find('input')
+					var name = input.attr('data-name')
+					var example = input.attr('data-example')
+					var key = JSON.parse(input.attr('data-key'))
+
+					var data = input.val() != '' ? input.val() : example
+
+					if (key) {
+						base += data
+					} else {
+						if (data != '') { params[name] = data }
+					}
+				})
+
+				return [base, params]
+			}
+
+			$('.docs-input').on('keyup', function() {
+				var docs = $(this).closest('.api-doc-block')
+				var method = docs.attr('data-request-method')
+
+				if (method == 'GET') {
+					var link = docs.find('.doc-link')
+
+					var data = inputs(docs)
+					var base = data[0]
+					var params = data[1]
+
+					if (Object.keys(params).length > 0) { base += '?' }
+					base += $.param(params)
+					link.attr('href', base)
+					link.text(base)
+				}
+			})
+		</script>
+	</body>
+</html>

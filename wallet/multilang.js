@@ -72,7 +72,14 @@ var walletLanguages = {
 		'pass-not-match': 'Your passwords do not match!',
 		'pass-too-short': 'Your password must be at least 10 chars long!',
 		'bad-email': 'Your email address doesn\'t appear to be valid!',
-		'small-fee': 'You should specify fee not less than'
+		'small-fee': 'You should specify fee not less than',
+		// Token strings
+		'tokens': 'Tokens',
+		'token-send-to-self': 'You can\'t send token transaction to yourself',
+		'token-marker': 'Token marker amount',
+		'advanced': 'Advanced',
+		'not-valid-marker': 'You must specify valid token marker!',
+		'bad-decimals': 'Your amount has more decimals than this token supports!',
 	},
 	'uk': {
 		'lang-alias': 'Українська',

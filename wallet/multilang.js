@@ -80,6 +80,10 @@ var walletLanguages = {
 		'advanced': 'Advanced',
 		'not-valid-marker': 'You must specify valid token marker!',
 		'bad-decimals': 'Your amount has more decimals than this token supports!',
+		'token-lock': 'Lock transfered tokens by height',
+		'not-valid-lock': 'You must specify valid lock!',
+		'available-tokes': 'Available tokens',
+		'burn-tokens': 'Burn tokens',
 	},
 	'uk': {
 		'lang-alias': 'Українська',

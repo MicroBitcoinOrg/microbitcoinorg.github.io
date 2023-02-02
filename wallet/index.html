@@ -249,6 +249,16 @@
 										<button class="btn btn-outline-dark b-width" type="submit" id="send-tx" tkey="send"></button>
 									</div>
 								</div>
+
+								<!-- Token balances -->
+
+								<hr class="has-tokens d-none"/>
+
+								<p class="has-tokens">
+									<span tkey="available-tokes"></span>
+								</p>
+
+								<div class="list-group token-balances"></div>
 							</div>
 							
 							<div class="tab-item d-none" data-tab="wallet-keys">
@@ -282,7 +292,7 @@
 							</div>
 
 							<div class="tab-item d-none" data-tab="wallet-tokens">
-								<div class="list-group token-balances"></div>
+								Work in progress...
 							</div>
 						</div>
 						<div class="card-footer">
@@ -444,6 +454,17 @@
 
 							<div class="collapse" id="collapseAdvanced">
 								<input id="send-token-marker" class="form-control mb-2" type="text" value="">
+
+								<input id="send-token-lock" class="form-control mb-2" type="text" value="">
+
+								<div class="mb-3 mt-3">
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" value="" id="tokens-burn">
+										<label class="form-check-label" for="tokens-burn">
+											<b class="text-danger" tkey="burn-tokens"></b>
+										</label>
+									</div>
+								</div>
 							</div>
 
 							<a class="btn btn-sm btn-block btn-outline-dark" tkey="advanced" data-toggle="collapse" href="#collapseAdvanced" role="button" aria-expanded="false" aria-controls="collapseExample"></a>
@@ -486,6 +507,7 @@
 					'title': 'MicroBitcoin Wallet',
 					'name': 'Main Network (MBC)',
 					'token_api': 'https://tokens.mbc.wiki',
+					// 'token_api': 'http://127.0.0.1:5858',
 					'api': 'https://api.mbc.wiki',
 					'ticker': 'MBC',
 					'decimals': 4,
@@ -564,6 +586,7 @@
 					'bad-decimals': getText('bad-decimals'),
 					'not-valid-marker': getText('not-valid-marker'),
 					'not-valid-fee': getText('not-valid-fee'),
+					'not-valid-lock': getText('not-valid-lock'),
 					'bad-priv-key': getText('bad-priv-key'),
 					'not-enough-utxo': getText('not-enough-utxo'),
 					'broadcast-failed': getText('broadcast-failed'),
@@ -959,6 +982,9 @@
 				$('#send-fee').attr('placeholder', getText('fee') + ' (' + getText('recommended') + ' ' + globalData.rfee + ' ' + getConfig()['ticker'] + ')')
 				$('#send-token-fee').attr('placeholder', getText('fee') + ' (' + getText('recommended') + ' ' + globalData.rfee + ' ' + getConfig()['ticker'] + ')')
 				$('#send-token-marker').attr('placeholder', getText('token-marker') + ' (' + getText('recommended') + ' ' + globalData.rfee + ' ' + getConfig()['ticker'] + ')')
+
+				$('#send-token-lock').attr('placeholder', getText('token-lock'))
+
 				showQrAddress(getConfig()['uri'] + globalData.address)
 
 				// Init wallet stuffs
@@ -1461,6 +1487,28 @@
 
 				// Set fee from config (ToDo: update fee in backend)
 				globalData.rfee = getConfig()['fee']
+
+				$('#tokens-burn').change(function() {
+					if ($('#tokens-burn').prop('checked')) {
+						$("#send-token-address").attr("disabled", true)
+						$("#send-token-marker").attr("disabled", true)
+						$("#send-token-lock").attr("disabled", true)
+
+						$("#send-token-address").addClass("d-none")
+						$("#send-token-marker").addClass("d-none")
+						$("#send-token-lock").addClass("d-none")
+					} else {
+						$("#send-token-address").attr("disabled", false)
+						$("#send-token-marker").attr("disabled", false)
+						$("#send-token-lock").attr("disabled", false)
+
+						$("#send-token-address").removeClass("d-none")
+						$("#send-token-marker").removeClass("d-none")
+						$("#send-token-lock").removeClass("d-none")
+					}
+				})
+
+				// Testing
 			})
 
 			// Tokens stuff
@@ -1486,12 +1534,30 @@
 			}
 
 			// Build transfer payload
-			function tokenMessageTransfer(value, ticker) {
+			function tokenMessageTransfer(value, ticker, lock) {
 				return Promise.resolve($.ajax({
-					'url': getTokenBackend() + '/message/transfer?ticker=' + ticker + '&value=' + value,
-				})).then(function(data) {
-					return data
-				})
+					'method': 'POST',
+					'url': getTokenBackend() + '/message/transfer',
+					'contentType': 'application/json',
+					'data': JSON.stringify({
+						'ticker': ticker,
+						'value': value,
+						'lock': lock
+					})
+				}))
+			}
+
+			// Build burn payload
+			function tokenMessageBurn(value, ticker) {
+				return Promise.resolve($.ajax({
+					'method': 'POST',
+					'url': getTokenBackend() + '/message/burn',
+					'contentType': 'application/json',
+					'data': JSON.stringify({
+						'ticker': ticker,
+						'value': value
+					})
+				}))
 			}
 
 			function tokenConstruct(receive_address, send_address, payload, marker, fee) {
@@ -1512,13 +1578,20 @@
 			// Check wallet balance
 			function walletTokenBalance() {
 				$('.token-balances').empty()
+				$('.has-tokens').addClass('d-none')
 
 				globalData.tokenBalances = {}
 
 				addressTokensBalance(globalData.address).then(function(data) {
+					if (data.balances.length > 0) {
+						$('.has-tokens').removeClass('d-none')
+					} else {
+						$('.has-tokens').addClass('d-none')
+					}
+
 					for (const balance of data.balances) {
 						$('.token-balances').append(`
-							<a href="#" data-ticker="${balance.ticker}" data-decimals="${balance.decimals}" class="send-token-btn list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+							<a href="#" data-ticker="${balance.ticker}" data-decimals="${balance.decimals}" class="send-token-btn list-group-item list-group-item-action d-flex justify-content-between align-items-center pt-2 pb-2 pl-3 pr-3">
 								<span>
 									<svg width="32" height="32" data-jdenticon-value="${balance.ticker}"></svg>
 								</span>
@@ -1545,6 +1618,16 @@
 			}
 
 			function showTokenSend(ticker, decimals) {
+				$('#tokens-burn').prop('checked', false)
+
+				$("#send-token-address").attr("disabled", false)
+				$("#send-token-marker").attr("disabled", false)
+				$("#send-token-lock").attr("disabled", false)
+
+				$("#send-token-address").removeClass("d-none")
+				$("#send-token-marker").removeClass("d-none")
+				$("#send-token-lock").removeClass("d-none")
+
 				$('#send-token-fee').val("")
 				$('#send-token-address').val("")
 				$('#send-token-amount').val("")
@@ -1568,6 +1651,116 @@
 				$('#status-token-screen span').html('')
 			}
 
+			function tokenTransaction(payload, fee, receive_address, marker) {
+				const network = getConfig()['network']
+				const keys = globalData.keys
+
+				let send_address = globalData.address
+
+				let hashType = bitcoin.Transaction.SIGHASH_ALL
+				let scripts = []
+
+				var txb = new bitcoin.TransactionBuilder(network)
+				txb.setVersion(2)
+
+				// Add marker
+				if (receive_address) {
+					txb.addOutput(receive_address, marker)
+				}
+
+				const payload_encoded = bitcoin.Buffer(payload, 'hex')
+				const payload_script = bitcoin.script.compile([bitcoin.opcodes.OP_RETURN, payload_encoded])
+
+				txb.addOutput(payload_script, 0)
+
+				$('#status-token-screen span').html(messages.tx['loading-utxo'])
+
+				getUnspent(send_address, marker + fee).then(function(data) {
+					var value = 0
+					for (var i = 0, size = data.result.length; i < size; i++) {
+						var txid = data.result[i].txid
+						var index = data.result[i].index
+						value += data.result[i].value
+
+						var script = bitcoin.Buffer(data.result[i].script, 'hex')
+						var type = getScriptType(script)
+
+						if (type == 'bech32') {
+							var p2wpkh = getP2WPKHScript(keys.publicKey)
+							txb.addInput(txid, index, null, p2wpkh.output)
+						} else {
+							txb.addInput(txid, index)
+						}
+
+						scripts.push({
+							'script': script,
+							'type': type,
+							'value': data.result[i].value
+						})
+					}
+
+					if (value >= marker + fee) {
+						let change = value - fee
+
+						if (receive_address) {
+							change -= marker
+						}
+
+						if (change > 0) {
+							txb.addOutput(send_address, change)
+						}
+
+						for (var i = 0, size = scripts.length; i < size; i++) {
+							switch (scripts[i].type) {
+								case 'bech32':
+									var value = scripts[i].value
+									txb.sign(i, keys, null, null, value, null)
+									break
+
+								case 'segwit':
+									var value = scripts[i].value
+									var redeem = getP2WPKHScript(keys.publicKey)
+									var p2sh = getP2SHScript(redeem)
+
+									txb.sign(i, keys, p2sh.redeem.output, null, value, null)
+									break
+
+								case 'legacy':
+									txb.sign(i, keys)
+									break
+
+								default:
+									showTokenMessage(messages.error['bad-utxo'])
+									break
+							}
+						}
+
+						var tx = txb.build()
+
+						transactionBroadcast(tx.toHex()).then(function(data) {
+							if (data.error == undefined) {
+								$('#status-token-screen span').html(`
+									<a href="${blockExplorer.tx(data.result)}" target="_blank">
+										${data.result}
+									</a> 
+								`)
+								$('#send-token-title').text(messages.title['success'])
+							} else {
+								$('#status-token-screen span').html(messages.error['broadcast-failed'])
+								$('#send-token-title').text(messages.title['failed'])
+								$('#status-token-screen .extra-info').html(`
+									<div class="mt-3">
+										<textarea class="form-control" readonly cols="30" rows="10">${data.error.message}</textarea>
+									</div>
+								`)
+							}
+						})
+					} else {
+						showTokenMessage(messages.error['not-enough-funds'])
+					}
+				})
+			}
+
 			function sendTokenTransaction() {
 				let error = false
 				let error_message = null
@@ -1582,12 +1775,25 @@
 
 				let send_address = globalData.address
 
+				let token_lock = $('#send-token-lock').val() != '' ? $('#send-token-lock').val() : null
+
+				const burn = $('#tokens-burn').prop('checked')
+
+				if (token_lock && !burn) {
+					if ((isNaN(token_lock)) || token_lock <= 0) {
+						error_message = messages.error['not-valid-lock']
+						error = true
+					} else {
+						token_lock = token_lock * 1
+					}
+				}
+
 				if ((isNaN(fee)) || fee <= 0) {
 					error_message = messages.error['not-valid-fee']
 					error = true
 				}
 
-				if ((isNaN(marker)) || marker <= 0) {
+				if ((isNaN(marker)) || marker <= 0 && !burn) {
 					error_message = messages.error['not-valid-marker']
 					error = true
 				}
@@ -1602,13 +1808,13 @@
 					error = true
 				}
 
-				if (validateAddress(receive_address) == false) {
+				if (validateAddress(receive_address) == false && !burn) {
 					error_message = messages.error['not-valid-address']
 					error = true
 				}
 
 				// Can't send to itself
-				if (receive_address == globalData.address) {
+				if (receive_address == globalData.address && !burn) {
 					error_message = messages.error['token-send-to-self']
 					error = true
 				}
@@ -1631,111 +1837,19 @@
 						value_token, globalData.tokenBalances[ticker]['decimals']
 					)
 
-					tokenMessageTransfer(value_satoshis, ticker).then(function(payload_data) {
-						const payload = payload_data.data
+					if (!burn) {
+						tokenMessageTransfer(value_satoshis, ticker, token_lock).then(function(payload_data) {
+							const payload = payload_data.data
 
-						const network = getConfig()['network']
-						const keys = globalData.keys
-
-						let send_address = globalData.address
-
-						let hashType = bitcoin.Transaction.SIGHASH_ALL
-						let scripts = []
-
-						var txb = new bitcoin.TransactionBuilder(network)
-						txb.setVersion(2)
-
-						// Add marker
-						txb.addOutput(receive_address, marker)
-
-						const payload_encoded = bitcoin.Buffer(payload, 'hex')
-						const payload_script = bitcoin.script.compile([bitcoin.opcodes.OP_RETURN, payload_encoded])
-
-						txb.addOutput(payload_script, 0)
-
-						$('#status-token-screen span').html(messages.tx['loading-utxo'])
-
-						getUnspent(send_address, marker + fee).then(function(data) {
-							var value = 0
-							for (var i = 0, size = data.result.length; i < size; i++) {
-								var txid = data.result[i].txid
-								var index = data.result[i].index
-								value += data.result[i].value
-
-								var script = bitcoin.Buffer(data.result[i].script, 'hex')
-								var type = getScriptType(script)
-
-								if (type == 'bech32') {
-									var p2wpkh = getP2WPKHScript(keys.publicKey)
-									txb.addInput(txid, index, null, p2wpkh.output)
-								} else {
-									txb.addInput(txid, index)
-								}
-
-								scripts.push({
-									'script': script,
-									'type': type,
-									'value': data.result[i].value
-								})
-							}
-
-							if (value >= marker + fee) {
-								var change = value - marker - fee
-								if (change > 0) {
-									txb.addOutput(send_address, change)
-								}
-
-								for (var i = 0, size = scripts.length; i < size; i++) {
-									switch (scripts[i].type) {
-										case 'bech32':
-											var value = scripts[i].value
-											txb.sign(i, keys, null, null, value, null)
-											break
-
-										case 'segwit':
-											var value = scripts[i].value
-											var redeem = getP2WPKHScript(keys.publicKey)
-											var p2sh = getP2SHScript(redeem)
-
-											txb.sign(i, keys, p2sh.redeem.output, null, value, null)
-											break
-
-										case 'legacy':
-											txb.sign(i, keys)
-											break
-
-										default:
-											showTokenMessage(messages.error['bad-utxo'])
-											break
-									}
-								}
-
-								var tx = txb.build()
-
-								transactionBroadcast(tx.toHex()).then(function(data) {
-									if (data.error == undefined) {
-										$('#status-token-screen span').html(`
-											<a href="${blockExplorer.tx(data.result)}" target="_blank">
-												${data.result}
-											</a> 
-										`)
-										$('#send-token-title').text(messages.title['success'])
-									} else {
-										$('#status-token-screen span').html(messages.error['broadcast-failed'])
-										$('#send-token-title').text(messages.title['failed'])
-										$('#status-token-screen .extra-info').html(`
-											<div class="mt-3">
-												<textarea class="form-control" readonly cols="30" rows="10">${data.error.message}</textarea>
-											</div>
-										`)
-									}
-								})
-							} else {
-								showTokenMessage(messages.error['not-enough-funds'])
-							}
+							tokenTransaction(payload, fee, receive_address, marker)
 						})
-					})
+					} else {
+						tokenMessageBurn(value_satoshis, ticker).then(function(payload_data) {
+							const payload = payload_data.data
 
+							tokenTransaction(payload, fee, null, null)
+						})
+					}
 				} else {
 					showTokenMessage(error_message)
 				}

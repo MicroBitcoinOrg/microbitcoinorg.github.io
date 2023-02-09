@@ -84,6 +84,15 @@ var walletLanguages = {
 		'not-valid-lock': 'You must specify valid lock!',
 		'available-tokes': 'Available tokens',
 		'burn-tokens': 'Burn tokens',
+		'token-ticker': 'Token ticker',
+		'token-decimals': 'Token decimal places',
+		'token-amount': 'Token amount',
+		'token-reissuable': 'Reissuable',
+		'create-token': 'Create token',
+		'not-valid-decimals': 'You must specify valid decimals!',
+		'payload-failed': 'Failed to create token payload',
+		'create-warning': 'You are one step away from creating',
+		'you-pay': 'You will pay'
 	},
 	'uk': {
 		'lang-alias': 'Українська',

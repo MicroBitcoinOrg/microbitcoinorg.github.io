@@ -88,6 +88,9 @@
 							<a href="#" class="nav-link">Home</a>
 						</li>
 						<li class="nav-item">
+							<a href="#/tokens" class="nav-link">Tokens</a>
+						</li>
+						<li class="nav-item">
 							<a href="https://microbitcoinorg.github.io/api/" target="_blank" class="nav-link">API</a>
 						</li>
 						<li class="nav-item">
@@ -182,6 +185,18 @@
 				<div id="tx-info-table">
 					
 				</div>
+
+				<div class="card mb-3" id="tx-token-transfer">
+					<div class="card-header">
+						Token transfers
+					</div>
+					<div class="card-body">
+						<div class="list-group">
+							<div id="tx-token-transfer-content"></div>
+						</div>
+					</div>
+				</div>
+
 				<div class="card mb-3" id="tx-info-vout-total">
 					<div class="card-header">
 						Outputs: <b>0</b>
@@ -194,6 +209,7 @@
 						</div>
 					</div>
 				</div>
+
 				<div class="card mb-3" id="tx-info-vin-total">
 					<div class="card-header">
 						Inputs: <b>0</b>
@@ -236,6 +252,29 @@
 				</button>
 			</div>
 		</div>
+
+		<!-- Tokens page -->
+		<div id="tokens" class="router-page">
+			<div class="container">
+				<div class="card mb-3">
+					<div class="table-responsive">
+						<table id="tokens-table" class="table table-borderless table-md table-striped text-center mb-0">
+							<thead>
+								<tr>
+									<th scope="col">Ticker</th>
+									<th scope="col">Supply</th>
+									<th scope="col">Transfers</th>
+									<th scope="col">Holders</th>
+								</tr>
+							</thead>
+							<tbody></tbody>
+						</table>
+					</div>
+				</div>
+
+				<ul id="tokens-pagination" class="pagination"></ul>
+			</div>
+		</div>
 		
 		<!-- QR code modal window -->
 		<div id="qrModal" class="modal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -272,6 +311,7 @@
 				'MBC': {
 					'name': 'Main Network (MBC)',
 					'api': 'https://api.mbc.wiki',
+					'tokens': 'https://tokens.mbc.wiki',
 					'ticker': 'MBC',
 					'decimals': 4,
 					'hrp': 'mbc'
@@ -279,6 +319,7 @@
 				'TMBC': {
 					'name': 'Test Network (TMBC)',
 					'api': 'https://api.mbc.wiki/test/',
+					'tokens': 'https://tokens.mbc.wiki',
 					'ticker': 'TMBC',
 					'decimals': 4,
 					'hrp': 'tmbc'
@@ -453,6 +494,48 @@
 				}
 			}
 
+			function paginationNumbers(currentPage, totalPages) {
+				if (currentPage == totalPages) {
+					return []
+				}
+
+				const MAX_PAGES = 5; // maximum number of pages to display in the pagination array
+				const paginationArray = [];
+
+				// add first page
+				paginationArray.push(1);
+
+				// if there are less than or equal to MAX_PAGES total pages, display all pages
+				if (totalPages <= MAX_PAGES) {
+					for (let i = 2; i <= totalPages - 1; i++) {
+						paginationArray.push(i);
+					}
+				} else {
+					// otherwise, display a subset of pages around the current page
+					let startPage = Math.max(2, currentPage - Math.floor(MAX_PAGES / 2));
+					let endPage = Math.min(totalPages - 1, startPage + MAX_PAGES - 1);
+
+					// add ellipsis if needed
+					if (startPage > 2) {
+						paginationArray.push("...");
+					}
+
+					for (let i = startPage; i <= endPage; i++) {
+						paginationArray.push(i);
+					}
+
+					// add ellipsis if needed
+					if (endPage < totalPages - 1) {
+						paginationArray.push("...");
+					}
+				}
+
+				// add last page
+				paginationArray.push(totalPages);
+
+				return paginationArray;
+			}
+
 			// Display doc links
 			function displayDocs() {
 				$('a.api-link').each(function() {
@@ -508,8 +591,17 @@
 				}
 
 				if (urlParams[0] == '#') {
-					var pageName = urlParams[1] != '' ? urlParams[1] : 'homepage'
-					var templateName = '#' + pageName
+					const pageNameFull = urlParams[1] != '' ? urlParams[1] : 'homepage'
+					const pageNameSplit = pageNameFull.split("?")
+					const pageName = pageNameSplit[0]
+
+					let pageParams = null
+
+					if (pageNameSplit.length == 2) {
+						pageParams = new URLSearchParams(pageNameSplit[1])
+					}
+
+					const templateName = '#' + pageName
 					
 					if ($('.router-page:visible').attr('id') != urlParams[1]) {
 						$('div.router-page').hide()
@@ -564,6 +656,9 @@
 									switchApi(api, page)
 								} else {
 									if (data_tx_hash != urlParams[2]) {
+										$('#tx-token-transfer').addClass('d-none')
+										$('#tx-token-transfer-content').empty()
+
 										$('#tx-info-vout-total').addClass('d-none')
 										$('#tx-info-vin-total').addClass('d-none')
 										$('#tx-info-table').empty()
@@ -571,6 +666,13 @@
 											if (tx['error'] == undefined) {
 												setTitle('Transaction ' + tx_hash)
 												displayTransactionInfo(tx.result)
+
+												transactionInfoToken(tx_hash).then(function(tx_token) {
+													if (tx_token.list.length > 0) {
+														$('#tx-token-transfer').removeClass('d-none')
+														displayTransactionTransfers(tx_token.list)
+													}
+												})
 											} else {
 												showError(errorMessages['tx-not-found'])
 												switchPage()
@@ -639,6 +741,20 @@
 
 							break
 
+						// Tokens dashboard
+						case 'tokens':
+							setTitle('Tokens')
+
+							let page = 1
+
+							if (pageParams && pageParams.get("page")) {
+								page = parseInt(pageParams.get("page"))
+							}
+
+							displayTokensInfo(page)
+
+							break
+
 						// Home page ¯\_(ツ)_/¯
 						case 'homepage':
 							setTitle('Latest Blocks')
@@ -701,6 +817,24 @@
 			function transactionInfo(hash) {
 				return Promise.resolve($.ajax({
 					'url': getApi()['api'] + '/transaction/' + hash,
+				})).then(function(data) {
+					return data
+				})
+			}
+
+			// Get transaction info
+			function transactionInfoToken(hash) {
+				return Promise.resolve($.ajax({
+					'url': getApi()['tokens'] + '/layer/tx/' + hash,
+				})).then(function(data) {
+					return data
+				})
+			}
+
+			// Get tokens list
+			function tokensList(page = 1) {
+				return Promise.resolve($.ajax({
+					'url': getApi()['tokens'] + '/layer/tokens?page=' + page,
 				})).then(function(data) {
 					return data
 				})
@@ -787,6 +921,61 @@
 						$('#more').addClass('d-none')
 					}
 				});
+			}
+
+			function displayTokens(tokens, prepend = false) {
+				$("#tokens-table tbody").empty()
+
+				tokens.list.forEach(function(token, index) {
+					if ($('tr[data-ticker="' + token.ticker + '"]').length == 0) {
+						var content = `
+							<tr data-ticker="${token.ticker}">
+								<td>
+									${token.ticker}
+								</td>
+								<td>
+									<span class="text-monospace">${amountFormatSatoshis(token.supply, token.decimals)}</span> ${token.ticker}
+								</td>
+								<td>
+									${token.transfers}
+								</td>
+								<td>
+									${token.holders}
+								</td>
+							</tr>`
+
+						if (prepend) {
+							$('#tokens-table tbody').prepend(content)
+						} else {
+							$('#tokens-table tbody').append(content)
+						}
+					}
+				});
+
+				const pagination = paginationNumbers(tokens.pagination.page, tokens.pagination.pages)
+
+				$("#tokens-pagination").empty()
+				$("#tokens-pagination").addClass("d-none")
+
+				if (pagination.length > 0) {
+					$("#tokens-pagination").removeClass("d-none")
+				}
+
+				for (const number of pagination) {
+					if (number == "...") {
+						$("#tokens-pagination").append(`
+							<li class="page-item disabled">
+								<a class="page-link" href="#">...</a>
+							</li>
+						`)
+					} else {
+						$("#tokens-pagination").append(`
+							<li class="page-item ${tokens.pagination.page == number ? 'disabled' : ''}">
+								<a class="page-link" href="#/tokens?page=${number}">${number}</a>
+							</li>
+						`)
+					}
+				}
 			}
 
 			function displayBlockInfo(data) {
@@ -959,6 +1148,43 @@
 				$('#tx-info-vin-total').removeClass('d-none')
 			}
 
+			function displayTransactionTransfers(data) {
+				for (let index = 0; index < data.length; index++) {
+					const transfer = data[index];
+
+					var content = `
+						<div class="list-group-item flex-column align-items-start">
+							<div class="row">
+								<div class="col-md-9 col-sm-12 col-xs-12">
+									<div class="${transfer.receiver == null ? "d-none" : ""}">
+										<span class="text-muted mr-1">
+										<span class="entypo right text-success"></span>
+										<a href="#/address/${transfer.receiver}">${transfer.receiver}</a>
+									</div>
+
+									<div class="${transfer.sender == null ? "d-none" : ""}">
+										<span class="text-muted mr-1">
+										<span class="entypo left text-danger"></span>
+										<a href="#/address/${transfer.sender}">${transfer.sender}</a>
+									</div>
+								</div>
+
+								<div class="col-md-3 col-sm-12 col-xs-12 text-md-right">
+									<div>
+										<small class="text-muted">
+											<span class="text-monospace">${amountFormatSatoshis(transfer.value, transfer.decimals)}</span> <b><a href="#/token/${transfer.token}">${transfer.token}</a></b>
+										</small>
+										<span class="badge badge-dark">${transfer.category}</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					`
+
+					$('#tx-token-transfer-content').append(content)
+				}
+			}
+
 			function showQrModal(e, text) {
 				$('#qrCode').empty()
 				$('#qrCode').qrcode(text)
@@ -1066,7 +1292,7 @@
 
 					content = `
 						<a class="list-group-item list-group-item-action" href="#/address/${address}">
-							<span class="entypo up text-danger"></span>
+							<span class="entypo left text-danger"></span>
 							<span class="text-primary">${address}</span>
 							<small class="float-right text-muted">
 								<span class="text-monospace">${transfer_amount}</span>
@@ -1097,7 +1323,7 @@
 
 					content = `
 						<a class="list-group-item list-group-item-action" href="#/address/${address}">
-							<span class="entypo down text-success"></span>
+							<span class="entypo right text-success"></span>
 							<span class="text-primary">${address}</span>
 							<small class="float-right text-muted">
 								<span class="text-monospace">${transfer_amount}</span>
@@ -1152,6 +1378,48 @@
 								tx.find('.transaction-to ul').append(status.to)
 							}
 
+							transactionInfoToken(tx.attr('data-transaction')).then(function(tx_token) {
+								if (tx_token.list.length > 0) {
+									// $('#tx-token-transfer').removeClass('d-none')
+									// displayTransactionTransfers(tx_token.list)
+									tx.find('.transaction-transfers').removeClass('d-none')
+
+									for (let index = 0; index < tx_token.list.length; index++) {
+										const transfer = tx_token.list[index];
+
+										tx.find('.transaction-transfers ul').append(`
+											<li class="list-group-item flex-column align-items-start">
+												<div class="row">
+													<div class="col-md-9 col-sm-12 col-xs-12">
+														<div class="${transfer.receiver == null ? "d-none" : ""}">
+															<span class="text-muted mr-1">
+															<span class="entypo right text-success"></span>
+															<a href="#/address/${transfer.receiver}">${transfer.receiver}</a>
+														</div>
+
+														<div class="${transfer.sender == null ? "d-none" : ""}">
+															<span class="text-muted mr-1">
+															<span class="entypo left text-danger"></span>
+															<a href="#/address/${transfer.sender}">${transfer.sender}</a>
+														</div>
+													</div>
+
+													<div class="col-md-3 col-sm-12 col-xs-12 text-md-right">
+														<div>
+															<small class="text-muted">
+																<span class="text-monospace">${amountFormatSatoshis(transfer.value, transfer.decimals)}</span> <b><a href="#/token/${transfer.token}">${transfer.token}</a></b>
+															</small>
+															<span class="badge badge-dark">${transfer.category}</span>
+														</div>
+													</div>
+												</div>
+											</li>
+										`)
+									}
+									console.log("HUI", tx_token)
+								}
+							})
+
 							tx.attr('data-transaction-loaded', true)
 						}
 					})
@@ -1176,6 +1444,14 @@
 							</div>
 							<div class="card-body">
 								<div class="row">
+									<div class="col-12 transaction-transfers d-none">
+										<ul class="list-group mb-3">
+											<li class="list-group-item disabled">
+												<b>Token transfers</b>
+											</li>
+										</ul>
+									</div>
+
 									<div class="col-12 transaction-from d-none">
 										<ul class="list-group mb-3">
 											<li class="list-group-item disabled">
@@ -1215,7 +1491,7 @@
 									<div class="row">
 										<div class="col-md-9 col-sm-12 col-xs-12">
 											<span class="text-muted mr-1">
-												<span class="entypo down text-success"></span>
+												<span class="entypo right text-success"></span>
 											</span>
 											<span class="text-primary">${vout.scriptPubKey.addresses[0]}</span>
 										</div>
@@ -1264,7 +1540,7 @@
 								<div class="row">
 									<div class="col-md-9 col-sm-12 col-xs-12">
 										<span class="text-muted mr-1">
-											<span class="entypo up text-danger"></span>
+											<span class="entypo left text-danger"></span>
 										</span>
 										<a href="#/address/${vin.scriptPubKey.addresses[0]}">
 											${vin.scriptPubKey.addresses[0]}
@@ -1294,7 +1570,7 @@
 								<div class="row">
 									<div class="col-md-9 col-sm-12 col-xs-12">
 										<!-- <span class="text-muted mr-1">
-											<span class="entypo up text-danger"></span>
+											<span class="entypo left text-danger"></span>
 										</span> -->
 										<span class="text-primary">${tx_info.data.txid}</span>
 									</div>
@@ -1359,6 +1635,12 @@
 				})
 			}
 
+			function displayTokensInfo(page = 1) {
+				tokensList(page).then(function(tokens) {
+					displayTokens(tokens)
+				})
+			}
+
 			// Set cookie
 			function setCookie(name, value, days) {
 				var expires;
@@ -1393,6 +1675,10 @@
 			// Convert satoshis to readable amount
 			function amountFormat(amount) {
 				var decimals = getApi()['decimals']
+				return parseFloat((amount / Math.pow(10, decimals)).toFixed(decimals))
+			}
+
+			function amountFormatSatoshis(amount, decimals) {
 				return parseFloat((amount / Math.pow(10, decimals)).toFixed(decimals))
 			}
 

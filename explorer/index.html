@@ -114,7 +114,7 @@
 				<div class="card-body">
 					<form id="search-form">
 						<div class="input-group">
-							<input type="text" id="search-field" name="search-field" class="form-control" placeholder="Block, hash, transaction, etc..." aria-label="Recipient's username" aria-describedby="button-addon2">
+							<input type="text" id="search-field" name="search-field" class="form-control" placeholder="Block, hash, transaction, token, etc..." aria-label="Recipient's username" aria-describedby="button-addon2">
 							<div class="input-group-append">
 								<button class="btn btn-outline-dark" type="submit" id="button-addon2">Search!</button>
 							</div>
@@ -275,6 +275,18 @@
 				<ul id="tokens-pagination" class="pagination"></ul>
 			</div>
 		</div>
+
+		<!-- Token info page -->
+		<div id="token" class="router-page">
+			<div class="container">
+				<div id="token-info-table">
+					
+				</div>
+				<div id="token-transfers" class="mb-3"></div>
+
+				<ul id="transfers-pagination" class="pagination"></ul>
+			</div>
+		</div>
 		
 		<!-- QR code modal window -->
 		<div id="qrModal" class="modal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -316,14 +328,14 @@
 					'decimals': 4,
 					'hrp': 'mbc'
 				},
-				'TMBC': {
-					'name': 'Test Network (TMBC)',
-					'api': 'https://api.mbc.wiki/test/',
-					'tokens': 'https://tokens.mbc.wiki',
-					'ticker': 'TMBC',
-					'decimals': 4,
-					'hrp': 'tmbc'
-				}
+				// 'TMBC': {
+				// 	'name': 'Test Network (TMBC)',
+				// 	'api': 'https://api.mbc.wiki/test/',
+				// 	'tokens': 'https://tokens.mbc.wiki',
+				// 	'ticker': 'TMBC',
+				// 	'decimals': 4,
+				// 	'hrp': 'tmbc'
+				// }
 			}
 
 			// Error messages
@@ -495,7 +507,7 @@
 			}
 
 			function paginationNumbers(currentPage, totalPages) {
-				if (currentPage == totalPages) {
+				if (currentPage == 1 && currentPage == totalPages) {
 					return []
 				}
 
@@ -583,211 +595,225 @@
 				}
 			}
 
+			function parseLocation(locationHash) {
+				const parts = locationHash.split('/');
+				const page = parts[1] || null;
+				const index = parts[parts.length - 1].indexOf('?');
+				const search = index !== -1 ? parts.slice(2, -1).concat(parts.slice(-1)[0].slice(0, index)).join('/') : parts.slice(2, -1).concat(parts.slice(-1)[0] || []).join('/') || null;
+				const query = index !== -1 ? parts[parts.length - 1].slice(index + 1) : null;
+				return {
+					page,
+					search,
+					query
+				};
+			}
+
+
 			// SPA router function
 			function routePage() {
-				var urlParams = readParams()
 				if (window.location.hash == '') {
 					window.location.replace(window.location.href.split('#')[0] + '#/')
 				}
 
-				if (urlParams[0] == '#') {
-					const pageNameFull = urlParams[1] != '' ? urlParams[1] : 'homepage'
-					const pageNameSplit = pageNameFull.split("?")
-					const pageName = pageNameSplit[0]
+				const location = parseLocation(window.location.hash)
 
-					let pageParams = null
+				const pageSearch = location.search
+				let pageName = location.page
+				let pageParams = null
 
-					if (pageNameSplit.length == 2) {
-						pageParams = new URLSearchParams(pageNameSplit[1])
+				if (pageName == null) {
+					pageName = "homepage"
+				}
+
+				if (location.query != null) {
+					pageParams = new URLSearchParams(location.query)
+				}
+
+				const templateName = '#' + pageName
+				
+				if ($('.router-page:visible').attr('id') != pageName) {
+					$('div.router-page').hide()
+					if ($(templateName).length) {
+						$(templateName).show()
 					}
+				}
 
-					const templateName = '#' + pageName
-					
-					if ($('.router-page:visible').attr('id') != urlParams[1]) {
-						$('div.router-page').hide()
-						if ($(templateName).length) {
-							$(templateName).show()
-						}
-					}
-
-					switch(pageName) {
-						// Block info page
-						case 'block':
-							var block_hash = urlParams[2]
-							var api = urlParams[3]
-							var data_block_hash = $('#block-info-hash').attr('data-block-info-hash')
-							if (block_hash != undefined && block_hash.length == 64) {
-								if (api != undefined) {
-									page = urlParams[1] + '/' + urlParams[2]
-									switchApi(api, page)
-								} else {
-									if (data_block_hash != urlParams[2]) {
-										$('#block-info-tx-total').addClass('d-none')
-										$('#block-info-table').empty()
-										blockInfo(block_hash).then(function(block) {
-											if (block['error'] == undefined) {
-												setTitle('Block #' + block.result.height)
-												displayBlockInfo(block.result)
-											} else {
-												showError(errorMessages['blocks-not-found'])
-												switchPage()
-											}
-										})
-									} else {
-										setTitle('Block #' + block_hash)
-									}
-								}
-
-							} else {
-								showError(errorMessages['no-block-specified'])
-								switchPage()
-							}
-
-							break
-
-						// Transaction info page
-						case 'transaction':
-							var tx_hash = urlParams[2]
-							var api = urlParams[3]
-							var data_tx_hash = $('#tx-info-hash').attr('data-tx-info-hash')
-							if (tx_hash != undefined) {
-								if (api != undefined) {
-									page = urlParams[1] + '/' + urlParams[2]
-									switchApi(api, page)
-								} else {
-									if (data_tx_hash != urlParams[2]) {
-										$('#tx-token-transfer').addClass('d-none')
-										$('#tx-token-transfer-content').empty()
-
-										$('#tx-info-vout-total').addClass('d-none')
-										$('#tx-info-vin-total').addClass('d-none')
-										$('#tx-info-table').empty()
-										transactionInfo(tx_hash).then(function(tx) {
-											if (tx['error'] == undefined) {
-												setTitle('Transaction ' + tx_hash)
-												displayTransactionInfo(tx.result)
-
-												transactionInfoToken(tx_hash).then(function(tx_token) {
-													if (tx_token.list.length > 0) {
-														$('#tx-token-transfer').removeClass('d-none')
-														displayTransactionTransfers(tx_token.list)
-													}
-												})
-											} else {
-												showError(errorMessages['tx-not-found'])
-												switchPage()
-											}
-										})
-									} else {
-										setTitle('Transaction ' + data_tx_hash)
-									}
-								}
-							} else {
-								showError(errorMessages['no-tx-specified'])
-								switchPage()
-							}
-
-							break
-
-						case 'address':
-							var address = urlParams[2]
-							var api = urlParams[3]
-							var data_address = $('#data-address').attr('data-address')
-							if (address != undefined) {
-								if (api != undefined) {
-									page = urlParams[1] + '/' + urlParams[2]
-									switchApi(api, page)
-								} else {
-									if (data_address != urlParams[2]) {
-										$('#address-history').addClass('d-none')
-										$('#address-info-table').empty()
-										addressBalance(address).then(function(data) {
-											if (data['error'] == undefined) {
-												setTitle('Address ' + address)
-												displayAddressInfo(data.result, address)
-											} else {
-												showError(errorMessages['not-valid-address'])
-												switchPage()
-											}
-										})
-									} else {
-										setTitle('Address ' + data_address)
-									}
-								}
-							} else {
-								showError(errorMessages['not-valid-address'])
-								switchPage()
-							}
-
-							break
-
-						// Redirect to block page by block height
-						case 'height':
-							block_height = urlParams[2]
-							if (block_height != undefined && isNumeric(block_height)) {
-								blockHeight(urlParams[2]).then(function(block) {
-									setTitle('Loading')
+				switch(pageName) {
+					// Block info page
+					case 'block':
+						var block_hash = pageSearch
+						var data_block_hash = $('#block-info-hash').attr('data-block-info-hash')
+						if (block_hash != undefined && block_hash.length == 64) {
+							if (data_block_hash != pageSearch) {
+								$('#block-info-tx-total').addClass('d-none')
+								$('#block-info-table').empty()
+								blockInfo(block_hash).then(function(block) {
 									if (block['error'] == undefined) {
-										switchPage('block', [block['result']['hash']])
+										setTitle('Block #' + block.result.height)
+										displayBlockInfo(block.result)
 									} else {
-										showError(errorMessages['blocks-load-error'])
+										showError(errorMessages['blocks-not-found'])
 										switchPage()
 									}
 								})
 							} else {
-								showError(errorMessages['nan-error'])
-								switchPage()
+								setTitle('Block #' + block_hash)
 							}
-
-							break
-
-						// Tokens dashboard
-						case 'tokens':
-							setTitle('Tokens')
-
-							let page = 1
-
-							if (pageParams && pageParams.get("page")) {
-								page = parseInt(pageParams.get("page"))
-							}
-
-							displayTokensInfo(page)
-
-							break
-
-						// Home page ¯\_(ツ)_/¯
-						case 'homepage':
-							setTitle('Latest Blocks')
-							displayHome()
-
-							break
-
-						// Swith network to explore
-						case 'network':
-							network = urlParams[2]
-							if (network != undefined) {
-								switchApi(network)
-							}
-
-							break
-
-						default:
+						} else {
+							showError(errorMessages['no-block-specified'])
 							switchPage()
+						}
 
-							break
-					}
+						break
+
+					// Transaction info page
+					case 'transaction':
+						var tx_hash = pageSearch
+						var data_tx_hash = $('#tx-info-hash').attr('data-tx-info-hash')
+						if (tx_hash != undefined) {
+							if (data_tx_hash != pageSearch) {
+								$('#tx-token-transfer').addClass('d-none')
+								$('#tx-token-transfer-content').empty()
+
+								$('#tx-info-vout-total').addClass('d-none')
+								$('#tx-info-vin-total').addClass('d-none')
+								$('#tx-info-table').empty()
+								transactionInfo(tx_hash).then(function(tx) {
+									if (tx['error'] == undefined) {
+										setTitle('Transaction ' + tx_hash)
+										displayTransactionInfo(tx.result)
+
+										transactionInfoToken(tx_hash).then(function(tx_token) {
+											if (tx_token.list.length > 0) {
+												$('#tx-token-transfer').removeClass('d-none')
+												displayTransactionTransfers(tx_token.list)
+											}
+										})
+									} else {
+										showError(errorMessages['tx-not-found'])
+										switchPage()
+									}
+								})
+							} else {
+								setTitle('Transaction ' + data_tx_hash)
+							}
+						} else {
+							showError(errorMessages['no-tx-specified'])
+							switchPage()
+						}
+
+						break
+
+					case 'address':
+						var address = pageSearch
+						var data_address = $('#data-address').attr('data-address')
+						if (address != undefined) {
+							if (data_address != pageSearch) {
+								$('#address-history').addClass('d-none')
+								$('#address-info-table').empty()
+								addressBalance(address).then(function(data) {
+									if (data['error'] == undefined) {
+										setTitle('Address ' + address)
+										displayAddressInfo(data.result, address)
+									} else {
+										showError(errorMessages['not-valid-address'])
+										switchPage()
+									}
+								})
+							} else {
+								setTitle('Address ' + data_address)
+							}
+						} else {
+							showError(errorMessages['not-valid-address'])
+							switchPage()
+						}
+
+						break
+
+					// Redirect to block page by block height
+					case 'height':
+						block_height = pageSearch
+						if (block_height != undefined && isNumeric(block_height)) {
+							blockHeight(pageSearch).then(function(block) {
+								setTitle('Loading')
+								if (block['error'] == undefined) {
+									switchPage('block', [block['result']['hash']])
+								} else {
+									showError(errorMessages['blocks-load-error'])
+									switchPage()
+								}
+							})
+						} else {
+							showError(errorMessages['nan-error'])
+							switchPage()
+						}
+
+						break
+
+					// Tokens dashboard
+					case 'tokens':
+						setTitle('Tokens')
+
+						let tokens_page = 1
+
+						if (pageParams && pageParams.get("page")) {
+							tokens_page = parseInt(pageParams.get("page"))
+						}
+
+						displayTokensList(tokens_page)
+
+						break
+					
+					case 'token':
+						setTitle('Token ' + pageSearch)
+
+						let token_page = 1
+
+						if (pageParams && pageParams.get("page")) {
+							token_page = parseInt(pageParams.get("page"))
+						}
+
+						tokenInfo(pageSearch).then(function(data) {
+							displayTokenInfo(data)
+
+							tokenTransfers(pageSearch, token_page).then(function(data) {
+								displayTokenTransfers(pageSearch, data)
+							})
+						}).catch(function(data) {
+							showError(errorMessages['search-error'])
+							switchPage()
+						})
+
+						break
+
+					// Home page ¯\_(ツ)_/¯
+					case 'homepage':
+						setTitle('Latest Blocks')
+						displayHome()
+
+						break
+
+					// Swith network to explore
+					case 'network':
+						network = pageSearch
+						if (network != undefined) {
+							switchApi(network)
+						}
+
+						break
+
+					default:
+						switchPage()
+
+						break
 				}
+				// }
 			}
 
 			// Switch router page
 			function switchPage(url = '', params = []) {
 				params = params.length > 0 ? '/' + params.join('/') : ''
 				window.location.hash = '#' + '/' + url + params;
-			}
-
-			// Read URL params
-			function readParams() {
-				return window.location.hash.split('/')
 			}
 
 			// Set window title
@@ -835,6 +861,25 @@
 			function tokensList(page = 1) {
 				return Promise.resolve($.ajax({
 					'url': getApi()['tokens'] + '/layer/tokens?page=' + page,
+				})).then(function(data) {
+					return data
+				})
+			}
+
+			// Get token info
+			function tokenInfo(ticker) {
+				return Promise.resolve($.ajax({
+					'url': getApi()['tokens'] + '/layer/token/' + ticker,
+				})).then(function(data) {
+					return data
+				})
+			}
+
+			// Get token transfers
+			function tokenTransfers(ticker, page = 1) {
+				console.log(page)
+				return Promise.resolve($.ajax({
+					'url': getApi()['tokens'] + '/layer/token/' + ticker + '/transfers?page=' + page,
 				})).then(function(data) {
 					return data
 				})
@@ -931,7 +976,7 @@
 						var content = `
 							<tr data-ticker="${token.ticker}">
 								<td>
-									${token.ticker}
+									<a href="#/token/${token.ticker}">${token.ticker}</a>
 								</td>
 								<td>
 									<span class="text-monospace">${amountFormatSatoshis(token.supply, token.decimals)}</span> ${token.ticker}
@@ -1185,6 +1230,123 @@
 				}
 			}
 
+			function displayTokenInfo(data) {
+				content = `
+					<div class="card mb-3">
+						<div class="table-responsive">
+							<table class="table table-borderless table-md table-striped mb-0">
+								<tbody>
+									<tr>
+										<td>Ticker</td>
+										<td>${data.ticker}</td>
+									</tr>
+									<tr>
+										<td>Supply</td>
+										<td>
+											<span class="text-monospace">${amountFormatSatoshis(data.supply, data.decimals)}</span> ${data.ticker}
+										</td>
+									</tr>
+									<tr>
+										<td>Type</td>
+										<td>${data.type}</td>
+									</tr>
+									<tr>
+										<td>Decimals</td>
+										<td>${data.decimals}</td>
+									</tr>
+									<tr>
+										<td>Transfers</td>
+										<td>${data.transfers}</td>
+									</tr>
+									<tr>
+										<td>Holders</td>
+										<td>${data.holders}</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>`
+
+				$('#token-info-table').html(content)
+			}
+
+			function displayTokenTransfers(ticker, transfers) {
+				console.log(transfers)
+				$("#token-transfers").empty()
+
+				transfers.list.forEach(function(transfer, index) {
+					var content = `
+					<div class="card mt-3 light-shadow">
+						<div class="card-header">
+							Transaction: <a href="#/transaction/${transfer.txid}">
+								${transfer.txid}
+							</a>
+							<div class="float-right">
+								<span class="transaction-time">${timeFormat(transfer.created)}</span>
+							</div>
+						</div>
+						<div class="card-body">
+							<div class="list-group-item flex-column align-items-start">
+								<div class="row">
+									<div class="col-md-9 col-sm-12 col-xs-12">
+										<div class="${transfer.receiver == null ? "d-none" : ""}">
+											<span class="text-muted mr-1">
+											<span class="entypo right text-success"></span>
+											<a href="#/address/${transfer.receiver}">${transfer.receiver}</a>
+										</div>
+
+										<div class="${transfer.sender == null ? "d-none" : ""}">
+											<span class="text-muted mr-1">
+											<span class="entypo left text-danger"></span>
+											<a href="#/address/${transfer.sender}">${transfer.sender}</a>
+										</div>
+									</div>
+
+									<div class="col-md-3 col-sm-12 col-xs-12 text-md-right">
+										<div>
+											<small class="text-muted">
+												<span class="text-monospace">${amountFormatSatoshis(transfer.value, transfer.decimals)}</span> <b><a href="#/token/${transfer.token}">${transfer.token}</a></b>
+											</small>
+											<span class="badge badge-dark">${transfer.category}</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					`
+
+					$('#token-transfers').append(content)
+				})
+				
+				const pagination = paginationNumbers(transfers.pagination.page, transfers.pagination.pages)
+
+				console.log(pagination)
+
+				$("#transfers-pagination").empty()
+				$("#transfers-pagination").addClass("d-none")
+
+				if (pagination.length > 0) {
+					$("#transfers-pagination").removeClass("d-none")
+				}
+
+				for (const number of pagination) {
+					if (number == "...") {
+						$("#transfers-pagination").append(`
+							<li class="page-item disabled">
+								<a class="page-link" href="#">...</a>
+							</li>
+						`)
+					} else {
+						$("#transfers-pagination").append(`
+							<li class="page-item ${transfers.pagination.page == number ? 'disabled' : ''}">
+								<a class="page-link" href="#/token/${ticker}?page=${number}">${number}</a>
+							</li>
+						`)
+					}
+				}
+			}
+
 			function showQrModal(e, text) {
 				$('#qrCode').empty()
 				$('#qrCode').qrcode(text)
@@ -1416,7 +1578,6 @@
 											</li>
 										`)
 									}
-									console.log("HUI", tx_token)
 								}
 							})
 
@@ -1635,7 +1796,7 @@
 				})
 			}
 
-			function displayTokensInfo(page = 1) {
+			function displayTokensList(page) {
 				tokensList(page).then(function(tokens) {
 					displayTokens(tokens)
 				})
@@ -1935,7 +2096,7 @@
 							} else if (search.length == 34 || search.substring(0, 3) == getApi()['hrp']) {
 								switchPage('address', [search])
 							} else {
-								showError(errorMessages['search-error'])
+								switchPage('token', [search])
 							}
 						}
 					}

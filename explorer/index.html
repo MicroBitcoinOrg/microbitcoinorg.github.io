@@ -287,6 +287,29 @@
 				<ul id="transfers-pagination" class="pagination"></ul>
 			</div>
 		</div>
+
+		<!-- Token holders page -->
+		<div id="holders" class="router-page">
+			<div class="container">
+				<div class="card mb-3">
+					<div class="table-responsive">
+						<table id="holders-table" class="table table-borderless table-md table-striped text-center mb-0">
+							<thead>
+								<tr>
+									<th scope="col">Address</th>
+									<th scope="col">Balance</th>
+									<th scope="col">Received</th>
+									<th scope="col">Sent</th>
+								</tr>
+							</thead>
+							<tbody></tbody>
+						</table>
+					</div>
+				</div>
+
+				<ul id="holders-pagination" class="pagination"></ul>
+			</div>
+		</div>
 		
 		<!-- QR code modal window -->
 		<div id="qrModal" class="modal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -786,6 +809,21 @@
 
 						break
 
+					case 'holders':
+						setTitle('Token ' + pageSearch + ' holders')
+
+						let holders_page = 1
+
+						if (pageParams && pageParams.get("page")) {
+							holders_page = parseInt(pageParams.get("page"))
+						}
+
+						tokenHolders(pageSearch, holders_page).then(function(data) {
+							displayTokenHolders(pageSearch, data)
+						})
+
+						break
+
 					// Home page ¯\_(ツ)_/¯
 					case 'homepage':
 						setTitle('Latest Blocks')
@@ -877,9 +915,17 @@
 
 			// Get token transfers
 			function tokenTransfers(ticker, page = 1) {
-				console.log(page)
 				return Promise.resolve($.ajax({
 					'url': getApi()['tokens'] + '/layer/token/' + ticker + '/transfers?page=' + page,
+				})).then(function(data) {
+					return data
+				})
+			}
+
+			// Get token holders
+			function tokenHolders(ticker, page = 1) {
+				return Promise.resolve($.ajax({
+					'url': getApi()['tokens'] + '/layer/token/' + ticker + '/holders?page=' + page,
 				})).then(function(data) {
 					return data
 				})
@@ -985,7 +1031,7 @@
 									${token.transfers}
 								</td>
 								<td>
-									${token.holders}
+									<a href="#/holders/${token.ticker}">${token.holders}</a>
 								</td>
 							</tr>`
 
@@ -1260,7 +1306,9 @@
 									</tr>
 									<tr>
 										<td>Holders</td>
-										<td>${data.holders}</td>
+										<td>
+											<a href="#/holders/${data.ticker}">${data.holders}</a>
+										</td>
 									</tr>
 								</tbody>
 							</table>
@@ -1321,8 +1369,6 @@
 				
 				const pagination = paginationNumbers(transfers.pagination.page, transfers.pagination.pages)
 
-				console.log(pagination)
-
 				$("#transfers-pagination").empty()
 				$("#transfers-pagination").addClass("d-none")
 
@@ -1341,6 +1387,57 @@
 						$("#transfers-pagination").append(`
 							<li class="page-item ${transfers.pagination.page == number ? 'disabled' : ''}">
 								<a class="page-link" href="#/token/${ticker}?page=${number}">${number}</a>
+							</li>
+						`)
+					}
+				}
+			}
+
+			function displayTokenHolders(ticker, holders) {
+				$("#holders-table tbody").empty()
+
+				holders.list.forEach(function(holder, index) {
+					if ($('tr[data-holder="' + holder.address + '"]').length == 0) {
+						var content = `
+							<tr data-holder="${holder.address}">
+								<td>
+									<a href="#/address/${holder.address}">${holder.address}</a>
+								</td>
+								<td>
+									<span class="text-monospace">${amountFormatSatoshis(holder.value, holder.decimals)}</span> ${holder.ticker}
+								</td>
+								<td>
+									<span class="text-monospace">${amountFormatSatoshis(holder.received, holder.decimals)}</span> ${holder.ticker}
+								</td>
+								<td>
+									<span class="text-monospace">${amountFormatSatoshis(holder.sent, holder.decimals)}</span> ${holder.ticker}
+								</td>
+							</tr>`
+
+						$('#holders-table tbody').append(content)
+					}
+				});
+
+				const pagination = paginationNumbers(holders.pagination.page, holders.pagination.pages)
+
+				$("#holders-pagination").empty()
+				$("#holders-pagination").addClass("d-none")
+
+				if (pagination.length > 0) {
+					$("#holders-pagination").removeClass("d-none")
+				}
+
+				for (const number of pagination) {
+					if (number == "...") {
+						$("#holders-pagination").append(`
+							<li class="page-item disabled">
+								<a class="page-link" href="#">...</a>
+							</li>
+						`)
+					} else {
+						$("#holders-pagination").append(`
+							<li class="page-item ${holders.pagination.page == number ? 'disabled' : ''}">
+								<a class="page-link" href="#/holders/${ticker}?page=${number}">${number}</a>
 							</li>
 						`)
 					}

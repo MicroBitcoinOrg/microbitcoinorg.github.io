@@ -229,9 +229,7 @@
 		<!-- Address page -->
 		<div id="address" class="router-page">
 			<div class="container">
-				<div id="address-info-table">
-					
-				</div>
+				<div id="address-info-table"></div>
 
 				<div class="card mb-3 d-none" id="address-token-balances">
 					<div class="card-header">
@@ -251,11 +249,12 @@
 					<div class="card-body">
 						<div class="list-group">
 						  	<div id="address-history-list">
-						  		
+
 						  	</div>
 						</div>
 					</div>
 				</div>
+
 				<div id="address-transactions" class="mb-3"></div>
 			</div>
 
@@ -269,6 +268,12 @@
 		<!-- Tokens page -->
 		<div id="tokens" class="router-page">
 			<div class="container">
+				<div class="card mb-3">
+					<div id="layer-stats" class="card-body">
+						STATS
+					</div>
+				</div>
+
 				<div class="card mb-3">
 					<div class="table-responsive">
 						<table id="tokens-table" class="table table-borderless table-md table-striped text-center mb-0">
@@ -800,6 +805,8 @@
 							tokens_page = parseInt(pageParams.get("page"))
 						}
 
+						displayTokensStats()
+
 						displayTokensList(tokens_page)
 
 						break
@@ -907,6 +914,15 @@
 			function transactionInfoToken(hash) {
 				return Promise.resolve($.ajax({
 					'url': getApi()['tokens'] + '/layer/tx/' + hash,
+				})).then(function(data) {
+					return data
+				})
+			}
+
+			// Get token info
+			function tokenLayerLatest() {
+				return Promise.resolve($.ajax({
+					'url': getApi()['tokens'] + '/layer/latest',
 				})).then(function(data) {
 					return data
 				})
@@ -1939,6 +1955,29 @@
 							}
 						})
 					}
+				})
+			}
+
+			function displayTokensStats() {
+				tokenLayerLatest().then(function(data) {
+					$("#layer-stats").html(`
+						<div class="d-flex text-center flex-md-row flex-column justify-content-md-around">
+							<span>
+								Sync height: <b>
+									<a href="#/block/${data.hash}">${data.height}</a>
+								</b>
+							</span>
+							<span>
+								Tokens issued: <b>${data.stats.tokens}</b>
+							</span>
+							<span>
+								Transfers made: <b>${data.stats.transfers}</b>
+							</span>
+							<span>
+								Holders: <b>${data.stats.holders}</b>
+							</span>
+						</div>
+					`)
 				})
 			}
 

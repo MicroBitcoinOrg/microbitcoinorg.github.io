@@ -273,6 +273,16 @@
 				</div>
 
 				<div class="card mb-3">
+					<div class="pt-3 pl-3">
+						<span class="mr-1">Filter:</span>
+						<div class="d-inline token-filter">
+							<input id="filter-root" value="root" type="checkbox" class="filter-group"/> <label class="mb-0 mr-1" for="filter-root">Root</label>
+							<input id="filter-sub" value="sub" type="checkbox" class="filter-group"/> <label class="mb-0 mr-1" for="filter-sub">Sub</label>
+							<input id="filter-unique" value="unique" type="checkbox" class="filter-group" /> <label class="mb-0" for="filter-unique">Unique</label>
+							<input id="filter-owner" value="owner" type="checkbox" class="filter-group" /> <label class="mb-0" for="filter-owner">Owner</label>
+						</div>
+					</div>
+					<hr>
 					<div class="table-responsive">
 						<table id="tokens-table" class="table table-borderless table-md table-striped text-center mb-0">
 							<thead>
@@ -546,6 +556,10 @@
 			}
 
 			function paginationNumbers(currentPage, totalPages) {
+				if (currentPage > totalPages) {
+					return []
+				}
+
 				if (currentPage == 1 && currentPage == totalPages) {
 					return []
 				}
@@ -635,18 +649,58 @@
 			}
 
 			function parseLocation(locationHash) {
-				const parts = locationHash.split('/');
-				const page = parts[1] || null;
-				const index = parts[parts.length - 1].indexOf('?');
-				const search = index !== -1 ? parts.slice(2, -1).concat(parts.slice(-1)[0].slice(0, index)).join('/') : parts.slice(2, -1).concat(parts.slice(-1)[0] || []).join('/') || null;
-				const query = index !== -1 ? parts[parts.length - 1].slice(index + 1) : null;
+				const [path, query] = locationHash.split("?");
+				const pathParts = path.split("/").filter(part => part !== "#");
+
+				const category = pathParts[0] || null;
+				const id = pathParts.slice(1).join("/") || null;
+				const query_result = query ? "?" + query : null
+
 				return {
-					page,
-					search,
-					query
+					"page": category,
+					"search": id,
+					"query": query_result
 				};
 			}
 
+			function updateQueryParam(inputString, key, value) {
+				// Split the input string into two parts: the URL and the query string
+				const [url, queryString] = inputString.split("?");
+
+				// Create an object to hold the key-value pairs in the query string
+				const queryParams = {};
+
+				// If there is a query string, split it into key-value pairs and add them to the object
+				if (queryString) {
+					queryString.split("&").forEach(param => {
+					const [paramKey, paramValue] = param.split("=");
+					queryParams[paramKey] = paramValue;
+					});
+				}
+
+				// Update or add the new key-value pair to the object
+				if (value === null) {
+					// If the value is null, remove the key from the object
+					delete queryParams[key];
+				} else {
+					// Otherwise, update or add the key-value pair
+					queryParams[key] = value;
+				}
+
+				// Convert the object back to a query string
+				const updatedQueryString = Object.entries(queryParams)
+					.filter(([paramKey, paramValue]) => paramValue !== null)
+					.map(([paramKey, paramValue]) => `${paramKey}=${paramValue}`)
+					.join("&");
+
+				// Construct the updated URL with the updated query string
+				if (updatedQueryString.length == 0) {
+					return `${url}`;
+				}
+
+				const separator = "?";
+				return `${url}${separator}${updatedQueryString}`;
+			}
 
 			// SPA router function
 			function routePage() {
@@ -798,14 +852,28 @@
 						setTitle('Tokens')
 
 						let tokens_page = 1
+						let tokens_filter = null
 
 						if (pageParams && pageParams.get("page")) {
 							tokens_page = parseInt(pageParams.get("page"))
 						}
 
+						if (pageParams && pageParams.get("filter")) {
+							tokens_filter = pageParams.get("filter")
+						}
+
+						$("#filter-root").prop('checked', false)
+						$("#filter-sub").prop('checked', false)
+						$("#filter-unique").prop('checked', false)
+						$("#filter-owner").prop('checked', false)
+
+						if (tokens_filter != null) {
+							$("#filter-" + tokens_filter).prop('checked', true)
+						}
+
 						displayTokensStats()
 
-						displayTokensList(tokens_page)
+						displayTokensList(tokens_page, tokens_filter)
 
 						break
 					
@@ -876,6 +944,10 @@
 				window.location.hash = '#' + '/' + url + params;
 			}
 
+			function switchPageFull(url) {
+				window.location.hash = url
+			}
+
 			// Set window title
 			function setTitle(title) {
 				document.title = title + ' | MBC Explorer';
@@ -927,9 +999,15 @@
 			}
 
 			// Get tokens list
-			function tokensList(page = 1) {
+			function tokensList(page = 1, filter = null) {
+				let endpoint = getApi()['tokens'] + '/layer/tokens?page=' + page
+
+				if (filter != null) {
+					endpoint += '&type=' + filter
+				}
+
 				return Promise.resolve($.ajax({
-					'url': getApi()['tokens'] + '/layer/tokens?page=' + page,
+					'url': endpoint,
 				})).then(function(data) {
 					return data
 				})
@@ -1359,7 +1437,6 @@
 			}
 
 			function displayTokenTransfers(ticker, transfers) {
-				console.log(transfers)
 				$("#token-transfers").empty()
 
 				transfers.list.forEach(function(transfer, index) {
@@ -1979,8 +2056,8 @@
 				})
 			}
 
-			function displayTokensList(page) {
-				tokensList(page).then(function(tokens) {
+			function displayTokensList(page, filter) {
+				tokensList(page, filter).then(function(tokens) {
 					displayTokens(tokens)
 				})
 			}
@@ -2276,6 +2353,18 @@
 
 					$('#search-form input').val('')
 					e.preventDefault()
+				})
+
+				$('.token-filter input[type="checkbox"]').on('change', function () {
+					$(this).parent().children('input[type="checkbox"]').not(this).prop('checked', false)
+
+					let filter_value = $(this).parent().children('input[type="checkbox"]:checked').val()
+
+					if (filter_value == undefined) {
+						filter_value = null
+					}
+
+					switchPageFull(updateQueryParam(location.hash, "filter", filter_value))
 				})
 
 				window.setInterval(function() {

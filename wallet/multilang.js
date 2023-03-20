@@ -93,7 +93,7 @@ var walletLanguages = {
 		'not-valid-decimals': 'You must specify valid decimals!',
 		'payload-failed': 'Failed to create token payload',
 		'create-warning': 'You are one step away from creating',
-		'issue-warning': 'You are one step away from creating',
+		'issue-warning': 'You are one step away from issuing',
 		'you-pay': 'You will pay',
 		'token-not-found': 'Token with this ticker is not found',
 		'token-not-issuable': 'You can\'t issue more supply for this token',

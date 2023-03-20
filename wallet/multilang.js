@@ -89,10 +89,14 @@ var walletLanguages = {
 		'token-amount': 'Token amount',
 		'token-reissuable': 'Reissuable',
 		'create-token': 'Create token',
+		'issue-token': 'Issue token',
 		'not-valid-decimals': 'You must specify valid decimals!',
 		'payload-failed': 'Failed to create token payload',
 		'create-warning': 'You are one step away from creating',
-		'you-pay': 'You will pay'
+		'issue-warning': 'You are one step away from creating',
+		'you-pay': 'You will pay',
+		'token-not-found': 'Token with this ticker is not found',
+		'token-not-issuable': 'You can\'t issue more supply for this token',
 	},
 	'uk': {
 		'lang-alias': 'Українська',

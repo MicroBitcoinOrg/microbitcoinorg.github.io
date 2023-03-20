@@ -294,9 +294,9 @@
 							<div class="tab-item d-none" data-tab="wallet-tokens">
 								<div id="token-dashboard">
 									<div class="mb-3">
-										<a href="#" data-content-family="token-dashboard" data-content-name="tokens-create" class="content-link disabled text-dark">Create token</a>
+										<a href="#" data-content-family="token-dashboard" data-content-name="tokens-create" class="content-link disabled text-dark" tkey="create-token"></a>
 										/
-										<a href="#" data-content-family="token-dashboard" data-content-name="tokens-issue" class="content-link ">Issue token</a>
+										<a href="#" data-content-family="token-dashboard" data-content-name="tokens-issue" class="content-link" tkey="issue-token"></a>
 									</div>
 
 									<div class="content-item" data-content="tokens-create">
@@ -317,7 +317,13 @@
 									</div>
 
 									<div class="content-item d-none" data-content="tokens-issue">
-										Issue
+										<input id="token-issue-ticker" name="token-issue-ticker" class="form-control mb-2" type="text" tkey="token-ticker">
+
+										<input id="token-issue-amount" name="token-issue-amount" class="form-control mb-2" type="text" tkey="token-amount">
+
+										<input id="token-issue-fee" class="form-control mb-2" type="text" value="">
+
+										<button id="token-issue" type="button" class="btn btn-outline-dark btn-block btn-sm" tkey="issue-token"></button>
 									</div>
 								</div>
 							</div>
@@ -1014,6 +1020,7 @@
 				$('#send-token-lock').attr('placeholder', getText('token-lock'))
 
 				$('#token-create-fee').attr('placeholder', getText('fee') + ' (' + getText('recommended') + ' ' + globalData.rfee + ' ' + getConfig()['ticker'] + ')')
+				$('#token-issue-fee').attr('placeholder', getText('fee') + ' (' + getText('recommended') + ' ' + globalData.rfee + ' ' + getConfig()['ticker'] + ')')
 
 				showQrAddress(getConfig()['uri'] + globalData.address)
 
@@ -1570,6 +1577,22 @@
 					e.preventDefault()
 				})
 
+				$("#token-issue").click(function(e) {
+					let ticker = $('#token-issue-ticker').val()
+
+					tokenInfo(ticker).then(function(data) {
+						if (data.reissuable) {
+							issueTokenTransaction(data.decimals)
+						} else {
+							showMessage(getText('token-not-issuable'))
+						}
+					}).catch(function() {
+						showMessage(getText('token-not-found'))
+					})
+
+					e.preventDefault()
+				})
+
 				// Testing
 			})
 
@@ -1604,6 +1627,15 @@
 				})
 			}
 
+			// Get token info
+			function tokenInfo(ticker) {
+				return Promise.resolve($.ajax({
+					'url': getTokenBackend() + '/layer/token/' + ticker,
+				})).then(function(data) {
+					return data
+				})
+			}
+
 			// Build transfer payload
 			function tokenMessageTransfer(value, ticker, lock) {
 				return Promise.resolve($.ajax({
@@ -1629,6 +1661,19 @@
 						'value': value,
 						'decimals': decimals,
 						'reissuable': reissuable
+					})
+				}))
+			}
+
+			// Build issue payload
+			function tokenMessageIssue(value, ticker) {
+				return Promise.resolve($.ajax({
+					'method': 'POST',
+					'url': getTokenBackend() + '/message/issue',
+					'contentType': 'application/json',
+					'data': JSON.stringify({
+						'ticker': ticker,
+						'value': value
 					})
 				}))
 			}
@@ -2068,6 +2113,86 @@
 				}
 			}
 
+			function issueTokenTransaction(decimals) {
+				let error = false
+				let error_message = null
+
+				let fee = amountFormat(($('#token-issue-fee').val() != '') ? $('#token-issue-fee').val() : globalData.rfee, true)
+				let value_token = $('#token-issue-amount').val() * 1
+
+				let ticker = $('#token-issue-ticker').val()
+
+				if ((isNaN(fee)) || fee <= 0) {
+					error_message = messages.error['not-valid-fee']
+					error = true
+				}
+
+				if ((isNaN(value_token)) || value_token <= 0) {
+					error_message = messages.error['not-valid-amount']
+					error = true
+				}
+
+				if (!error) {
+					if (countDecimals(value_token) > decimals) {
+						error_message = messages.error['bad-decimals']
+						error = true
+					}
+				}
+
+				if (error == false) {
+					const value_token_satoshis = amountFormatSatoshis(value_token, decimals)
+
+					tokenMessageIssue(value_token_satoshis, ticker).then(function(payload_data) {
+						const payload = payload_data.data
+
+						tokenLayerParams().then(function(params) {
+							const receive_address = params.fee_address
+							const marker = params.cost.issue[tickerType(ticker)]
+
+							showConfirmation(function () {
+								let cost_total = amountFormat(marker + fee)
+
+								$('#confirm-content').append(`
+									<span>${getText('issue-warning')}</span> <strong>${value_token} ${ticker}</strong>. <span>${getText('you-pay')}</span> <strong>${cost_total + ' ' + getConfig()['ticker']}</strong>. <span>${getText('send-warning-reverse')}</span>
+								`)
+
+								// Confirm transaction sendign (are you sure?)
+								$('#send-confirm').click(function(e) {
+									$('#confirm-content').html(messages.tx['loading-utxo'])
+
+									tokenTransaction(payload, fee, receive_address, marker, function(data) {
+										$('#status-screen').removeClass('d-none')
+										$('#confirm-screen').addClass('d-none')
+
+										if (data.error == undefined) {
+											$('#status-screen span').html(`
+												<a href="${blockExplorer.tx(data.result)}" target="_blank">
+													${data.result}
+												</a>
+											`)
+											$('#send-title').text(messages.title['success'])
+										} else {
+											$('#status-screen span').html(messages.error['broadcast-failed'])
+											$('#send-title').text(messages.title['failed'])
+											$('#status-screen .extra-info').html(`
+												<div class="mt-3">
+													<textarea class="form-control" readonly cols="30" rows="10">${data.error.message}</textarea>
+												</div>
+											`)
+										}
+									})
+
+									e.preventDefault()
+								})
+							})
+						})
+					}).catch(function(error) {
+						showMessage(getText('payload-failed'))
+					})
+				} else {
+					showMessage(error_message)
+				}
+			}
 		</script>
 	</body>
 </html>

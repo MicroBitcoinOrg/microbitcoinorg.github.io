@@ -931,7 +931,7 @@
 			}
 
 			function amountFormatSatoshis(amount, decimals) {
-				return parseInt(amount * Math.pow(10, decimals))
+				return parseFloat(amount * Math.pow(10, decimals))
 			}
 
 			// Show big error message at the top of the page :D 

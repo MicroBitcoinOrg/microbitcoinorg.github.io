@@ -2096,11 +2096,13 @@
 			// Convert satoshis to readable amount
 			function amountFormat(amount) {
 				var decimals = getApi()['decimals']
-				return parseFloat((amount / Math.pow(10, decimals)).toFixed(decimals))
+				return parseFloat((amount / Math.pow(10, decimals)).toFixed(decimals)).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 8 })
 			}
 
 			function amountFormatSatoshis(amount, decimals) {
-				return parseFloat((amount / Math.pow(10, decimals)).toFixed(decimals))
+				return parseFloat(
+					(amount / Math.pow(10, decimals)
+				).toFixed(decimals)).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 8 })
 			}
 
 			// Convert timestamp to readable date

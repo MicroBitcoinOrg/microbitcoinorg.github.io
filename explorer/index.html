@@ -1994,8 +1994,8 @@
 					// Display circulating supply
 					networkSupply().then(function(data) {
 						if(data['error'] == undefined) {
-							circulatingSupply = parseInt(amountFormat(data.result.supply))
-							$('#supply span').text(circulatingSupply.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' ' + getApi()['ticker']);
+							circulatingSupply = amountFormat(data.result.supply)
+							$('#supply span').text(circulatingSupply + ' ' + getApi()['ticker']);
 						} else {
 							showError(errorMessages['circulating-supply-load-error'])
 						}

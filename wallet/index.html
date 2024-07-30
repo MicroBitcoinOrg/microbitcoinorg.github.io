@@ -616,6 +616,7 @@
 					'token-send-to-self': getText('token-send-to-self'),
 					'not-valid-address': getText('not-valid-address'),
 					'not-valid-amount': getText('not-valid-amount'),
+					'amount-out-of-limit': getText('amount-out-of-limit'),
 					'not-valid-decimals': getText('not-valid-decimals'),
 					'bad-decimals': getText('bad-decimals'),
 					'not-valid-marker': getText('not-valid-marker'),
@@ -1352,6 +1353,11 @@
 
 						if ((isNaN(amount)) || amount <= 0) {
 							showMessage(messages.error['not-valid-amount'])
+							error = true
+						}
+
+						if ((isNaN(amount)) || Number(amount) > 10000000) {
+							showMessage(messages.error['amount-out-of-limit'])
 							error = true
 						}
 

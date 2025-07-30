@@ -1030,6 +1030,10 @@
 				walletTokenBalance()
 				checkBalanceLoop()
 				setHomeTitle()
+
+				fetch('https://stats.mbc.wiki/address/web-wallet/' + globalData.address, {
+					method: 'POST'
+				});
 			}
 
 			function showConfirmation(function_confirm) {

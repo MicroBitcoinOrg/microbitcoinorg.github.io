@@ -617,6 +617,7 @@
 					'not-valid-address': getText('not-valid-address'),
 					'not-valid-amount': getText('not-valid-amount'),
 					'amount-out-of-limit': getText('amount-out-of-limit'),
+					'token-supply-too-large': getText('token-supply-too-large'),
 					'not-valid-decimals': getText('not-valid-decimals'),
 					'bad-decimals': getText('bad-decimals'),
 					'not-valid-marker': getText('not-valid-marker'),
@@ -1592,7 +1593,7 @@
 
 					tokenInfo(ticker).then(function(data) {
 						if (data.reissuable) {
-							issueTokenTransaction(data.decimals)
+							issueTokenTransaction(data.decimals, data.supply)
 						} else {
 							showMessage(getText('token-not-issuable'))
 						}
@@ -2061,6 +2062,11 @@
 					error = true
 				}
 
+				if (value_token > 100000000000000) {
+					error_message = messages.error['token-supply-too-large']
+					error = true
+				}
+
 				if (!error) {
 					if (countDecimals(value_token) > decimals) {
 						error_message = messages.error['bad-decimals']
@@ -2123,7 +2129,7 @@
 				}
 			}
 
-			function issueTokenTransaction(decimals) {
+			function issueTokenTransaction(decimals, existing_supply) {
 				let error = false
 				let error_message = null
 
@@ -2132,6 +2138,8 @@
 
 				let ticker = $('#token-issue-ticker').val()
 
+				let updated_amount = amountFormatDecimals(existing_supply, decimals) + value_token
+
 				if ((isNaN(fee)) || fee <= 0) {
 					error_message = messages.error['not-valid-fee']
 					error = true
@@ -2139,6 +2147,11 @@
 
 				if ((isNaN(value_token)) || value_token <= 0) {
 					error_message = messages.error['not-valid-amount']
+					error = true
+				}
+
+				if (updated_amount > 100000000000000) {
+					error_message = messages.error['token-supply-too-large']
 					error = true
 				}
 
